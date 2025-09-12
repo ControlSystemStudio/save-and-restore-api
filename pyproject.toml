@@ -1,13 +1,10 @@
 [build-system]
-requires = ["setuptools>=77", "setuptools_scm[toml]>=7"]
+requires = ["setuptools>=77", "setuptools_scm[toml]>=8"]
 build-backend = "setuptools.build_meta"
 
 
 [project]
 name = "save-and-restore-api"
-authors = [
-  { name = "My Name", email = "me@email.com" },
-]
 description = "Python package for communication with CS Studio save-and-restore service"
 readme = "README.md"
 license = "BSD-3-Clause"
@@ -18,9 +15,6 @@ classifiers = [
   "Intended Audience :: Science/Research",
   "Intended Audience :: Developers",
   "Operating System :: OS Independent",
-  "Programming Language :: Python",
-  "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
@@ -30,22 +24,22 @@ classifiers = [
   "Typing :: Typed",
 ]
 dynamic = ["version"]
-dependencies = []
+dependencies = [
+  "httpx",
+]
+
+[project.scripts]
+save-and-restore-upload = "save_and_restore_api.tools.upload:main"
 
 [project.urls]
 Homepage = "https://github.com/dmgav/save-and-restore-api"
-"Bug Tracker" = "https://github.com/dmgav/save-and-restore-api/issues"
-Discussions = "https://github.com/dmgav/save-and-restore-api/discussions"
-Changelog = "https://github.com/dmgav/save-and-restore-api/releases"
 
-
-[dependency-groups]
-test = [
+[project.optional-dependencies]
+dev = [
   "pytest >=6",
   "pytest-cov >=3",
-]
-dev = [
-  { include-group = "test" },
+  "pre-commit",
+  "ruff",
 ]
 docs = [
   "sphinx>=7.0",
@@ -55,22 +49,25 @@ docs = [
   "furo>=2023.08.17",
 ]
 
-
 [tool.setuptools_scm]
 write_to = "src/save_and_restore_api/_version.py"
 
-
 [tool.pytest.ini_options]
 minversion = "6.0"
-addopts = ["-ra", "--showlocals", "--strict-markers", "--strict-config"]
-xfail_strict = true
+# Run pytest with all our checkers, and don't spam us with massive tracebacks on error
+# Don't collect the interactive directory which is intended for manual execution
+addopts = """
+    --tb=native -vv --doctest-modules --doctest-glob="*.rst" --ignore src/bluesky/tests/interactive
+    """
+# https://iscinumpy.gitlab.io/post/bound-version-constraints/#watch-for-warnings
 filterwarnings = [
-  "error",
+    "error",
+    "ignore::PendingDeprecationWarning",
+    "ignore::UserWarning",
+    "ignore::DeprecationWarning",
 ]
-log_cli_level = "INFO"
-testpaths = [
-  "tests",
-]
+# Doctest python code in docs, python code in src docstrings, test functions in tests
+testpaths = "src/save_and_restore_api/tests"
 
 
 [tool.coverage]
@@ -95,56 +92,31 @@ module = "save_and_restore_api.*"
 disallow_untyped_defs = true
 disallow_incomplete_defs = true
 
-
 [tool.ruff]
+src = ["src", "tests"]
+line-length = 115
+exclude = [
+    "docs/source/conf.py",
+    "docs/source/examples",
+]
 
 [tool.ruff.lint]
 extend-select = [
-  "ARG",      # flake8-unused-arguments
-  "B",        # flake8-bugbear
-  "C4",       # flake8-comprehensions
-  "EM",       # flake8-errmsg
-  "EXE",      # flake8-executable
-  "G",        # flake8-logging-format
-  "I",        # isort
-  "ICN",      # flake8-import-conventions
-  "NPY",      # NumPy specific rules
-  "PD",       # pandas-vet
-  "PGH",      # pygrep-hooks
-  "PIE",      # flake8-pie
-  "PL",       # pylint
-  "PT",       # flake8-pytest-style
-  "PTH",      # flake8-use-pathlib
-  "RET",      # flake8-return
-  "RUF",      # Ruff-specific
-  "SIM",      # flake8-simplify
-  "T20",      # flake8-print
-  "UP",       # pyupgrade
-  "YTT",      # flake8-2020
+    "B",   # flake8-bugbear - https://docs.astral.sh/ruff/rules/#flake8-bugbear-b
+    "C4",  # flake8-comprehensions - https://docs.astral.sh/ruff/rules/#flake8-comprehensions-c4
+    "E",   # pycodestyle errors - https://docs.astral.sh/ruff/rules/#error-e
+    "F",   # pyflakes rules - https://docs.astral.sh/ruff/rules/#pyflakes-f
+    "W",   # pycodestyle warnings - https://docs.astral.sh/ruff/rules/#warning-w
+    "I",   # isort - https://docs.astral.sh/ruff/rules/#isort-i
+    "UP",  # pyupgrade - https://docs.astral.sh/ruff/rules/#pyupgrade-up
 ]
 ignore = [
-  "PLR09",    # Too many <...>
-  "PLR2004",  # Magic value used in comparison
 ]
-isort.required-imports = ["from __future__ import annotations"]
-# Uncomment if using a _compat.typing backport
-# typing-modules = ["save_and_restore_api._compat.typing"]
+isort.required-imports = [
+]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = ["T20"]
-"noxfile.py" = ["T20"]
-
-
-[tool.pylint]
-py-version = "3.9"
-ignore-paths = [".*/_version.py"]
-reports.output-format = "colorized"
-similarities.ignore-imports = "yes"
-messages_control.disable = [
-  "design",
-  "fixme",
-  "line-too-long",
-  "missing-module-docstring",
-  "missing-function-docstring",
-  "wrong-import-position",
-]
+# By default, private member access is allowed in tests
+# See https://github.com/DiamondLightSource/python-copier-template/issues/154
+# Remove this line to forbid private member access in tests
+"tests/**/*" = ["SLF001"]

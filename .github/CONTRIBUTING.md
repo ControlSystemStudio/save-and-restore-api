@@ -1,77 +1,74 @@
-See the [Scientific Python Developer Guide][spc-dev-intro] for a detailed
-description of best practices for developing scientific packages.
+# Contributing
 
-[spc-dev-intro]: https://learn.scientific-python.org/development/
+## Getting Started
 
-# Quick development
+* Make sure you have a [GitHub account](https://github.com/signup/free)
+* Submit a ticket for your issue, assuming one does not already exist.
+  * Clearly describe the issue including steps to reproduce when it is a bug.
+  * Make sure you fill in the earliest version that you know has the issue.
+* Fork the repository on GitHub
 
-The fastest way to start with development is to use nox. If you don't have nox,
-you can use `uvx nox` to run it without installing, or `uv tool install nox`. If
-you don't have uv, you can
-[install it a variety of ways](https://docs.astral.sh/uv/getting-started/installation/),
-including with pip, pipx, brew, and just downloading the binary (single file).
 
-To use, run `nox`. This will lint and test using every installed version of
-Python on your system, skipping ones that are not installed. You can also run
-specific jobs:
+## Making Changes
 
-```console
-$ nox -s lint  # Lint only
-$ nox -s tests  # Python tests
-$ nox -s docs  # Build and serve the docs
-$ nox -s build  # Make an SDist and wheel
+* Create a topic branch from where you want to base your work.
+  * This is usually the master branch.
+  * Only target release branches if you are certain your fix must be on that
+    branch.
+  * To quickly create a topic branch based on master; `git checkout -b
+    fix/master/my_contribution master`. Please avoid working directly on the
+    `master` branch.
+* Make commits of logical units.
+* Check for unnecessary whitespace with `git diff --check` before committing.
+* Make sure your commit messages are in the proper format (see below)
+* Make sure you have added the necessary tests for your changes.
+* Run _all_ the tests to assure nothing else was accidentally broken.
+
+### Writing the commit message
+
+Commit messages should be clear and follow a few basic rules. Example:
+
+```
+ENH: add functionality X to bluesky.<submodule>.
+
+The first line of the commit message starts with a capitalized acronym
+(options listed below) indicating what type of commit this is.  Then a blank
+line, then more text if needed.  Lines shouldn't be longer than 72
+characters.  If the commit is related to a ticket, indicate that with
+"See #3456", "See ticket 3456", "Closes #3456" or similar.
 ```
 
-Nox handles everything for you, including setting up an temporary virtual
-environment for each run.
+Describing the motivation for a change, the nature of a bug for bug fixes
+or some details on what an enhancement does are also good to include in a
+commit message. Messages should be understandable without looking at the code
+changes.
 
-# Setting up a development environment manually
-
-You can set up a development environment by running:
-
-```bash
-uv sync
+Standard acronyms to start the commit message with are:
 ```
-
-# Pre-commit
-
-You should prepare pre-commit, which will help you by checking that commits pass
-required checks:
-
-```bash
-uv tool install pre-commit # or brew install pre-commit on macOS
-pre-commit install # Will install a pre-commit hook into the git repo
+API: an (incompatible) API change
+BLD: change related to building numpy
+BUG: bug fix
+CI : continuous integration
+DEP: deprecate something, or remove a deprecated object
+DEV: development tool or utility
+DOC: documentation
+ENH: enhancement
+MNT: maintenance commit (refactoring, typos, etc.)
+REV: revert an earlier commit
+STY: style fix (whitespace, PEP8)
+TST: addition or modification of tests
+REL: related to releases
 ```
+## The Pull Request
 
-You can also/alternatively run `pre-commit run` (changes only) or
-`pre-commit run --all-files` to check even without installing the hook.
+* Now push to your fork
+* Submit a [pull request](https://help.github.com/articles/using-pull-requests) to this branch. This is a start to the conversation.
 
-# Testing
+At this point you're waiting on us. We like to at least comment on pull requests within three business days
+(and, typically, one business day). We may suggest some changes or improvements or alternatives.
 
-Use pytest to run the unit checks:
-
-```bash
-uv run pytest
-```
-
-# Coverage
-
-Use pytest-cov to generate coverage reports:
-
-```bash
-uv run pytest --cov=save-and-restore-api
-```
-
-# Building docs
-
-You can build and serve the docs using:
-
-```bash
-nox -s docs
-```
-
-You can build the docs only with:
-
-```bash
-nox -s docs --non-interactive
-```
+Hints to make the integration of your changes easy (and happen faster):
+- Keep your pull requests small
+- Don't forget your unit tests
+- All algorithms need documentation, don't forget the .rst file
+- Don't take changes requests to change your code personally
