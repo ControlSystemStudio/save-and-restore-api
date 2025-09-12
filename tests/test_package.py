@@ -7,3 +7,7 @@ import save_and_restore_api as m
 
 def test_version():
     assert importlib.metadata.version("save_and_restore_api") == m.__version__
+
+
+def test_import():
+    from save_and_restore_api.tools.upload import SaveRestoreAPI  # noqa: F401
