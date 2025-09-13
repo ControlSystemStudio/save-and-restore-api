@@ -110,6 +110,7 @@ extend-select = [
     "I",   # isort - https://docs.astral.sh/ruff/rules/#isort-i
     "UP",  # pyupgrade - https://docs.astral.sh/ruff/rules/#pyupgrade-up
 ]
+unfixable = ["F401"]
 ignore = [
 ]
 isort.required-imports = [
