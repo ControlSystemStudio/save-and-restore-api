@@ -25,6 +25,12 @@ jobs:
         pip install .[dev]
         pip list
 
+    - name: Start save-and-restore service
+      run: |
+        pushd container
+        bash start-save-and-restore.sh
+        popd
+
     - name: Test with pytest
       run: |
         # pytest -k test_ip_kernel_func -vvv
