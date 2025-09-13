@@ -28,7 +28,7 @@ jobs:
     - name: Start save-and-restore service
       run: |
         pushd container
-        bash start-save-and-restore.sh
+        ./start-save-and-restore.sh
         popd
 
     - name: Test with pytest
