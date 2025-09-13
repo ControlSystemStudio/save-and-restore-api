@@ -29,7 +29,7 @@ class SaveRestoreAPI:
 
     def open(self):
         auth = httpx.BasicAuth(username=self._username, password=self._password)
-        self._client = httpx.Client(base_url=BASE_URL, timeout=timeout, auth=auth)
+        self._client = httpx.Client(base_url=self._base_url, timeout=timeout, auth=auth)
 
     def close(self):
         self._client.close()
