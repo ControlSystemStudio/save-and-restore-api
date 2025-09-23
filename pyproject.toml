@@ -38,6 +38,7 @@ Homepage = "https://github.com/dmgav/save-and-restore-api"
 dev = [
   "pytest >=6",
   "pytest-cov >=3",
+  "pytest-asyncio",
   "pre-commit",
   "ruff",
 ]
