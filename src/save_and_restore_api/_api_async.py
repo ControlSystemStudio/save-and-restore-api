@@ -33,5 +33,9 @@ class _SaveRestoreAPI_Async(_SaveRestoreAPI_Base):
         return response
 
     async def login(self, *, username=None, password=None):
-        method, url, params = await self._prepare_login(username=username, password=password)
-        self.send_request(method, url, params=params)
+        method, url, params = self._prepare_login(username=username, password=password)
+        await self.send_request(method, url, params=params)
+
+    async def get_node(self, node_uid):
+        method, url = self._prepare_get_node(node_uid=node_uid)
+        return await self.send_request(method, url)
