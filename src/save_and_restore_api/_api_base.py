@@ -1,8 +1,12 @@
-import getpass
+# import getpass
 import pprint
 from collections.abc import Mapping
 
 import httpx
+
+rest_api_method_map = {
+    "login": ("POST", "/login"),
+}
 
 
 class RequestParameterError(Exception): ...
@@ -53,21 +57,22 @@ class _SaveRestoreAPI_Base:
     def ROOT_NODE_UID(self):
         return self._root_node_uid
 
+    @staticmethod
     def gen_auth(username, password):
         return httpx.BasicAuth(username=username, password=password)
 
     def set_auth(self, *, username, password):
         self._auth = self.gen_auth(username=username, password=password)
 
-    def set_username_password(self, username=None, password=None):
-        if not isinstance(username, str):
-            print("Username: ", end="")
-            username = input()
-        if not isinstance(password, str):
-            password = getpass.getpass()
+    # def set_username_password(self, username=None, password=None):
+    #     if not isinstance(username, str):
+    #         print("Username: ", end="")
+    #         username = input()
+    #     if not isinstance(password, str):
+    #         password = getpass.getpass()
 
-        self._username = username
-        self._password = password
+    #     self._username = username
+    #     self._password = password
 
     # # TODO: rewrite the logic in this function
     # def _check_response(self, *, request, response):
@@ -137,9 +142,10 @@ class _SaveRestoreAPI_Base:
                 kwargs.update({"auth": auth})
         return kwargs
 
-    def login(self, *, username=None, password=None):
-        params = {"username": self._username, "password": self._password}
-        self.send_request("POST", "/login", params=params)
+    def _prepare_login(self, *, username=None, password=None):
+        method, url = rest_api_method_map["login"]
+        params = {"username": username, "password": password}
+        return method, url, params
 
     def get_node(self, node_uid):
         return self.send_request("GET", f"/node/{node_uid}")
