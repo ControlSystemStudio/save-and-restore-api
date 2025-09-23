@@ -34,7 +34,7 @@ class RequestFailedError(Exception):
         super().__init__(msg)
 
 
-class SaveRestoreAPI:
+class _SaveRestoreAPI_Base:
     RequestParameterError = RequestParameterError
     RequestTimeoutError = RequestTimeoutError
     RequestFailedError = RequestFailedError
