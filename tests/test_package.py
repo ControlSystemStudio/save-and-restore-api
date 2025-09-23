@@ -3,7 +3,7 @@ from __future__ import annotations
 import importlib.metadata
 
 import save_and_restore_api as m
-from save_and_restore_api.tools.upload import SaveRestoreAPI
+from save_and_restore_api import SaveRestoreAPI
 
 
 def test_version():
@@ -11,7 +11,7 @@ def test_version():
 
 
 def test_import():
-    from save_and_restore_api.tools.upload import SaveRestoreAPI  # noqa: F401
+    from save_and_restore_api import SaveRestoreAPI  # noqa: F401
 
 
 def test_comm():

@@ -1,12 +1,3 @@
-# Running elasticsearch in docker
-#   sudo docker compose -f save-and-restore.yml up -d
-# Test:
-#   curl -X GET "http://localhost:9200/"
-
-# .env file:
-#
-# HOST_EXTERNAL_IP_ADDRESS=192.168.50.49
-
 services:
   saveandrestore:
     image: ghcr.io/controlsystemstudio/phoebus/service-save-and-restore:master
