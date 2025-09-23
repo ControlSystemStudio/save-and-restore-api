@@ -59,12 +59,9 @@ class _SaveRestoreAPI_Base:
     def set_auth(self, *, username, password):
         self._auth = self.gen_auth(username=username, password=password)
 
-    def open(self):
-        self._client = httpx.Client(base_url=self._base_url, timeout=self._timeout)
+    def open(self): ...
 
-    def close(self):
-        self._client.close()
-        self._client = None
+    def close(self): ...
 
     def set_username_password(self, username=None, password=None):
         if not isinstance(username, str):
