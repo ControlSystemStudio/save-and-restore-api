@@ -4,10 +4,6 @@ from collections.abc import Mapping
 
 import httpx
 
-rest_api_method_map = {
-    "login": ("POST", "/login"),
-}
-
 
 class RequestParameterError(Exception): ...
 
@@ -143,12 +139,13 @@ class _SaveRestoreAPI_Base:
         return kwargs
 
     def _prepare_login(self, *, username=None, password=None):
-        method, url = rest_api_method_map["login"]
+        method, url = "POST", "/login"
         params = {"username": username, "password": password}
         return method, url, params
 
-    def get_node(self, node_uid):
-        return self.send_request("GET", f"/node/{node_uid}")
+    def _prepare_get_node(self, *, node_uid):
+        method, url = "GET", f"/node/{node_uid}"
+        return method, url
 
     def get_children(self, node_uid):
         return self.send_request("GET", f"/node/{node_uid}/children")
