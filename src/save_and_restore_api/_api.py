@@ -47,19 +47,20 @@ class SaveRestoreAPI:
         self._timeout = timeout
         self._client = None
         self._root_node_uid = "44bef5de-e8e6-4014-af37-b8f6c8a939a2"
-
-        self._username = None
-        self._password = None
-        # self._username = "***REMOVED***"
-        # self._password = "***REMOVED***"
+        self._auth = None
 
     @property
     def ROOT_NODE_UID(self):
         return self._root_node_uid
 
+    def gen_auth(username, password):
+        return httpx.BasicAuth(username=username, password=password)
+
+    def set_auth(self, *, username, password):
+        self._auth = self.gen_auth(username=username, password=password)
+
     def open(self):
-        auth = httpx.BasicAuth(username=self._username, password=self._password)
-        self._client = httpx.Client(base_url=self._base_url, timeout=self._timeout, auth=auth)
+        self._client = httpx.Client(base_url=self._base_url, timeout=self._timeout)
 
     def close(self):
         self._client.close()
@@ -123,7 +124,9 @@ class SaveRestoreAPI:
             else:
                 raise self.HTTPServerError(exc, **common_params) from exc
 
-    def send_request(self, method, url, *, params=None, url_params=None, headers=None, data=None, timeout=None):
+    def send_request(
+        self, method, url, *, params=None, url_params=None, headers=None, data=None, timeout=None, auth=None
+    ):
         try:
             client_response = None
             kwargs = {}
@@ -137,6 +140,10 @@ class SaveRestoreAPI:
                 kwargs.update({"data": data})
             if timeout is not None:
                 kwargs.update({"timeout": self._adjust_timeout(timeout)})
+            if method != "GET":
+                auth = auth or self._auth
+                if auth is not None:
+                    kwargs.update({"auth": auth})
             client_response = self._client.request(method, url, **kwargs)
             response = self._process_response(client_response=client_response)
         except Exception:
