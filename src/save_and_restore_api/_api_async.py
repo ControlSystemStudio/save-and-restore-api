@@ -31,3 +31,7 @@ class _SaveRestoreAPI_Async(_SaveRestoreAPI_Base):
             response = self._process_comm_exception(method=method, params=params, client_response=client_response)
 
         return response
+
+    async def login(self, *, username=None, password=None):
+        method, url, params = await self._prepare_login(username=username, password=password)
+        self.send_request(method, url, params=params)

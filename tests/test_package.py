@@ -17,9 +17,9 @@ def test_import():
 def test_comm():
     SR = SaveRestoreAPI(base_url="http://localhost:8080/save-restore", timeout=2)
     # SR.set_username_password(username="johndoe", password="1234")
-    SR.set_username_password(username="user", password="userPass")
+    SR.set_auth(username="user", password="userPass")
     # SR.set_username_password(username="admin", password="adminPass")
     SR.open()
-    SR.login()
+    SR.login(username="user", password="userPass")
     SR.get_node(SR.ROOT_NODE_UID)
     SR.close()
