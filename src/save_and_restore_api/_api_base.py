@@ -59,10 +59,6 @@ class _SaveRestoreAPI_Base:
     def set_auth(self, *, username, password):
         self._auth = self.gen_auth(username=username, password=password)
 
-    def open(self): ...
-
-    def close(self): ...
-
     def set_username_password(self, username=None, password=None):
         if not isinstance(username, str):
             print("Username: ", end="")
@@ -121,32 +117,25 @@ class _SaveRestoreAPI_Base:
             else:
                 raise self.HTTPServerError(exc, **common_params) from exc
 
-    def send_request(
-        self, method, url, *, params=None, url_params=None, headers=None, data=None, timeout=None, auth=None
+    def _prepare_request(
+        self, *, method, params=None, url_params=None, headers=None, data=None, timeout=None, auth=None
     ):
-        try:
-            client_response = None
-            kwargs = {}
-            if params:
-                kwargs.update({"json": params})
-            if url_params:
-                kwargs.update({"params": url_params})
-            if headers:
-                kwargs.update({"headers": headers})
-            if data:
-                kwargs.update({"data": data})
-            if timeout is not None:
-                kwargs.update({"timeout": self._adjust_timeout(timeout)})
-            if method != "GET":
-                auth = auth or self._auth
-                if auth is not None:
-                    kwargs.update({"auth": auth})
-            client_response = self._client.request(method, url, **kwargs)
-            response = self._process_response(client_response=client_response)
-        except Exception:
-            response = self._process_comm_exception(method=method, params=params, client_response=client_response)
-
-        return response
+        kwargs = {}
+        if params:
+            kwargs.update({"json": params})
+        if url_params:
+            kwargs.update({"params": url_params})
+        if headers:
+            kwargs.update({"headers": headers})
+        if data:
+            kwargs.update({"data": data})
+        if timeout is not None:
+            kwargs.update({"timeout": self._adjust_timeout(timeout)})
+        if method != "GET":
+            auth = auth or self._auth
+            if auth is not None:
+                kwargs.update({"auth": auth})
+        return kwargs
 
     def login(self, *, username=None, password=None):
         params = {"username": self._username, "password": self._password}
