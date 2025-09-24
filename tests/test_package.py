@@ -18,8 +18,47 @@ read_username, read_password = "johndoe", "1234"
 base_url = "http://localhost:8080/save-restore"
 
 
-def test_version():
+def test_version_01():
+    """
+    Test that the versioning works correctly.
+    """
     assert importlib.metadata.version("save_and_restore_api") == save_and_restore_api.__version__
+
+
+# # fmt: off
+# @pytest.mark.parametrize("library", ["THREADS", "ASYNC"])
+# # fmt: on
+# def test_api_call_01(library):
+#     """
+#     Test generic API call
+#     """
+#     username, password = user_username, user_password
+
+#     if not _is_async(library):
+#         SR = SaveRestoreAPI_Threads(base_url=base_url, timeout=2)
+#         SR.set_auth(username=user_username, password=user_password)
+#         SR.open()
+#         response = SR.login(username=username, password=password)
+#         assert response["userName"] == username
+#         SR.close()
+#         SR.open()
+#         response = SR.login(username=username, password=password)
+#         assert response["userName"] == username
+#         SR.close()
+#     else:
+#         async def testing():
+#             SR = SaveRestoreAPI_Async(base_url=base_url, timeout=2)
+#             SR.set_auth(username=user_username, password=user_password)
+#             SR.open()
+#             response = await SR.login(username=username, password=password)
+#             assert response["userName"] == username
+#             await SR.close()
+#             SR.open()
+#             response = await SR.login(username=username, password=password)
+#             assert response["userName"] == username
+#             await SR.close()
+
+#         asyncio.run(testing())
 
 
 # fmt: off
@@ -28,37 +67,72 @@ def test_version():
     (admin_username, admin_password,  ["ROLE_SAR-ADMIN"], 200),
     (user_username, user_password,  ["ROLE_SAR-USER"], 200),
     (read_username, read_password,  [], 200),
-    (user_username, read_password,  [], 401),
+    (user_username, read_password,  [], 401),  # Incorrect password
+    (user_username + "_a", user_password,  [], 401),  # Incorrect login
 ])
 # fmt: on
 def test_login_01(username, password, roles, library, code):
+    """
+    Tests for the 'login' API.
+    """
     if not _is_async(library):
-        SR = SaveRestoreAPI_Threads(base_url=base_url, timeout=2)
-        SR.set_auth(username=user_username, password=user_password)
-        SR.open()
-        if code == 200:
-            response = SR.login(username=username, password=password)
-            assert response["userName"] == username
-            assert response["roles"] == roles
-        else:
-            with pytest.raises(SR.HTTPClientError, match=f"{code}"):
-                SR.login(username=username, password=password)
-        SR.close()
-    else:
-        async def testing():
-            SR = SaveRestoreAPI_Async(base_url=base_url, timeout=2)
-            SR.set_auth(username=user_username, password=user_password)
+        with SaveRestoreAPI_Threads(base_url=base_url, timeout=2) as SR:
             SR.open()
             if code == 200:
-                response = await SR.login(username=username, password=password)
+                response = SR.login(username=username, password=password)
                 assert response["userName"] == username
                 assert response["roles"] == roles
             else:
                 with pytest.raises(SR.HTTPClientError, match=f"{code}"):
-                    await SR.login(username=username, password=password)
-            await SR.close()
+                    SR.login(username=username, password=password)
+    else:
+        async def testing():
+            async with SaveRestoreAPI_Async(base_url=base_url, timeout=2) as SR:
+                SR.open()
+                if code == 200:
+                    response = await SR.login(username=username, password=password)
+                    assert response["userName"] == username
+                    assert response["roles"] == roles
+                else:
+                    with pytest.raises(SR.HTTPClientError, match=f"{code}"):
+                        await SR.login(username=username, password=password)
 
         asyncio.run(testing())
+
+
+# fmt: off
+@pytest.mark.parametrize("library", ["THREADS", "ASYNC"])
+@pytest.mark.parametrize("node_uid, code", [
+    (SaveRestoreAPI_Threads.ROOT_NODE_UID, 200),
+    ("abc", 404),
+])
+# fmt: on
+def test_get_node_01(node_uid, library, code):
+    """
+    Tests for the 'login' API.
+    """
+    if not _is_async(library):
+        with SaveRestoreAPI_Threads(base_url=base_url, timeout=2) as SR:
+            SR.open()
+            if code == 200:
+                response = SR.get_node(node_uid)
+                assert response["uniqueId"] == node_uid
+            else:
+                with pytest.raises(SR.HTTPClientError, match=f"{code}"):
+                    SR.get_node(node_uid)
+    else:
+        async def testing():
+            async with SaveRestoreAPI_Async(base_url=base_url, timeout=2) as SR:
+                SR.open()
+                if code == 200:
+                    response = await SR.get_node(node_uid)
+                    assert response["uniqueId"] == node_uid
+                else:
+                    with pytest.raises(SR.HTTPClientError, match=f"{code}"):
+                        await SR.get_node(node_uid)
+
+        asyncio.run(testing())
+
 
 
 def test_comm():
@@ -68,13 +142,3 @@ def test_comm():
     SR.login(username="user", password="userPass")
     SR.get_node(SR.ROOT_NODE_UID)
     SR.close()
-
-
-@pytest.mark.asyncio
-async def test_comm_async():
-    SR = SaveRestoreAPI_Async(base_url=base_url, timeout=2)
-    SR.set_auth(username="user", password="userPass")
-    SR.open()
-    await SR.login(username="user", password="userPass")
-    await SR.get_node(SR.ROOT_NODE_UID)
-    await SR.close()

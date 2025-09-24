@@ -11,6 +11,13 @@ class _SaveRestoreAPI_Async(_SaveRestoreAPI_Base):
         await self._client.aclose()
         self._client = None
 
+    async def __aenter__(self):
+        self.open()
+        return self
+
+    async def __aexit__(self, exc_type, exc_value, traceback):
+        await self.close()
+
     async def send_request(
         self, method, url, *, params=None, url_params=None, headers=None, data=None, timeout=None, auth=None
     ):

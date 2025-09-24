@@ -1,4 +1,5 @@
 # import getpass
+import json
 import pprint
 from collections.abc import Mapping
 
@@ -42,16 +43,13 @@ class _SaveRestoreAPI_Base:
     HTTPClientError = HTTPClientError
     HTTPServerError = HTTPServerError
 
+    ROOT_NODE_UID = "44bef5de-e8e6-4014-af37-b8f6c8a939a2"
+
     def __init__(self, *, base_url, timeout, request_fail_exceptions=True):
         self._base_url = base_url
         self._timeout = timeout
         self._client = None
-        self._root_node_uid = "44bef5de-e8e6-4014-af37-b8f6c8a939a2"
         self._auth = None
-
-    @property
-    def ROOT_NODE_UID(self):
-        return self._root_node_uid
 
     @staticmethod
     def gen_auth(username, password):
@@ -109,11 +107,13 @@ class _SaveRestoreAPI_Base:
             common_params = {"request": exc.request, "response": exc.response}
             if client_response and (client_response.status_code < 500):
                 # Include more detail that httpx does by default.
-                message = (
-                    f"{exc.response.status_code}: "
-                    f"{exc.response.json()['detail'] if client_response.content else ''} "
-                    f"{exc.request.url}"
-                )
+                response_text = ""
+                if client_response.content:
+                    try:
+                        response_text = exc.response.json()["detail"]
+                    except json.JSONDecodeError:
+                        response_text = exc.response.text
+                message = f"{exc.response.status_code}: {response_text} {exc.request.url}"
                 raise self.HTTPClientError(message, **common_params) from exc
             else:
                 raise self.HTTPServerError(exc, **common_params) from exc

@@ -11,6 +11,13 @@ class _SaveRestoreAPI_Threads(_SaveRestoreAPI_Base):
         self._client.close()
         self._client = None
 
+    def __enter__(self):
+        self.open()
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.close()
+
     def send_request(
         self, method, url, *, params=None, url_params=None, headers=None, data=None, timeout=None, auth=None
     ):
