@@ -44,5 +44,22 @@ class _SaveRestoreAPI_Threads(_SaveRestoreAPI_Base):
         return self.send_request(method, url, params=params)
 
     def get_node(self, node_uid):
+        """
+        Returns the node with specified node UID.
+        """
         method, url = self._prepare_get_node(node_uid=node_uid)
+        return self.send_request(method, url)
+
+    def add_node(self, parentNodeId, *, name, nodeType, **kwargs):
+        method, url, params = self._prepare_add_node(
+            parentNodeId=parentNodeId, name=name, nodeType=nodeType, **kwargs
+        )
+        return self.send_request(method, url, params=params)
+
+    def delete_nodes(self, uniqueIds):
+        method, url, params = self._prepare_delete_nodes(uniqueIds=uniqueIds)
+        return self.send_request(method, url, params=params)
+
+    def get_children(self, node_uid):
+        method, url = self._prepare_get_children(node_uid=node_uid)
         return self.send_request(method, url)

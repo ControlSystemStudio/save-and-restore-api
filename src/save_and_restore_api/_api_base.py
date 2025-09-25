@@ -86,7 +86,7 @@ class _SaveRestoreAPI_Base:
 
     def _process_response(self, *, client_response):
         client_response.raise_for_status()
-        response = client_response.json()
+        response = client_response.json() if client_response.content else ""
         return response
 
     def _process_comm_exception(self, *, method, params, client_response):
@@ -147,8 +147,23 @@ class _SaveRestoreAPI_Base:
         method, url = "GET", f"/node/{node_uid}"
         return method, url
 
-    def get_children(self, node_uid):
-        return self.send_request("GET", f"/node/{node_uid}/children")
+    def _prepare_add_node(self, *, parentNodeId, name, nodeType, **kwargs):
+        node_types = ("FOLDER", "CONFIGURATION")
+        if nodeType not in node_types:
+            raise self.RequestParameterError(f"Invalid nodeType: {nodeType!r}. Supported types: {node_types}.")
+        method, url = "PUT", f"/node?parentNodeId={parentNodeId}"
+        params = kwargs
+        params.update({"name": name, "nodeType": nodeType})
+        return method, url, params
+
+    def _prepare_delete_nodes(self, *, uniqueIds):
+        method, url = "DELETE", "/node"
+        params = uniqueIds
+        return method, url, params
+
+    def _prepare_get_children(self, *, node_uid):
+        method, url = "GET", f"/node/{node_uid}/children"
+        return method, url
 
     def create_config(self, parent_node_uid, name, pv_list):
         config_dict = {

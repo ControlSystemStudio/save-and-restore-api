@@ -46,3 +46,17 @@ class _SaveRestoreAPI_Async(_SaveRestoreAPI_Base):
     async def get_node(self, node_uid):
         method, url = self._prepare_get_node(node_uid=node_uid)
         return await self.send_request(method, url)
+
+    async def add_node(self, parentNodeId, *, name, nodeType, **kwargs):
+        method, url, params = self._prepare_add_node(
+            parentNodeId=parentNodeId, name=name, nodeType=nodeType, **kwargs
+        )
+        return await self.send_request(method, url, params=params)
+
+    async def delete_nodes(self, uniqueIds):
+        method, url, params = self._prepare_delete_nodes(uniqueIds=uniqueIds)
+        return await self.send_request(method, url, params=params)
+
+    async def get_children(self, node_uid):
+        method, url = self._prepare_get_children(node_uid=node_uid)
+        return await self.send_request(method, url)
