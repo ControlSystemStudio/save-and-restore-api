@@ -189,6 +189,120 @@ def test_add_node_01(clear_sar, library):  # noqa: F811
         asyncio.run(testing())
 
 
+# fmt: off
+@pytest.mark.parametrize("library", ["THREADS", "ASYNC"])
+# fmt: on
+def test_delete_node_01(clear_sar, library):  # noqa: F811
+    """
+    Tests for the 'add_node' API.
+    """
+    if not _is_async(library):
+        with SaveRestoreAPI_Threads(base_url=base_url, timeout=2) as SR:
+            SR.set_auth(username=user_username, password=user_password)
+
+            response = SR.add_node(SR.ROOT_NODE_UID, name="Test Folder", nodeType="FOLDER")
+            assert response["name"] == "Test Folder"
+            assert response["nodeType"] == "FOLDER"
+            folder_uid = response["uniqueId"]
+
+            response = SR.add_node(folder_uid, name="Test Config 1", nodeType="CONFIGURATION")
+            assert response["name"] == "Test Config 1"
+            assert response["nodeType"] == "CONFIGURATION"
+            node_uid_1 = response["uniqueId"]
+
+            response = SR.add_node(folder_uid, name="Test Config 2", nodeType="CONFIGURATION")
+            assert response["name"] == "Test Config 2"
+            assert response["nodeType"] == "CONFIGURATION"
+            node_uid_2 = response["uniqueId"]
+
+            SR.delete_node(node_uid_1)
+            SR.delete_node(node_uid_2)
+            SR.delete_node(folder_uid)
+
+    else:
+        async def testing():
+            async with SaveRestoreAPI_Async(base_url=base_url, timeout=2) as SR:
+                SR.set_auth(username=user_username, password=user_password)
+
+                response = await SR.add_node(SR.ROOT_NODE_UID, name="Test Folder", nodeType="FOLDER")
+                assert response["name"] == "Test Folder"
+                assert response["nodeType"] == "FOLDER"
+                folder_uid = response["uniqueId"]
+
+                response = await SR.add_node(folder_uid, name="Test Config 1", nodeType="CONFIGURATION")
+                assert response["name"] == "Test Config 1"
+                assert response["nodeType"] == "CONFIGURATION"
+                node_uid_1 = response["uniqueId"]
+
+                response = await SR.add_node(folder_uid, name="Test Config 2", nodeType="CONFIGURATION")
+                assert response["name"] == "Test Config 2"
+                assert response["nodeType"] == "CONFIGURATION"
+                node_uid_2 = response["uniqueId"]
+
+                await SR.delete_node(node_uid_1)
+                await SR.delete_node(node_uid_2)
+                await SR.delete_node(folder_uid)
+
+        asyncio.run(testing())
+
+
+# fmt: off
+@pytest.mark.parametrize("library", ["THREADS", "ASYNC"])
+# fmt: on
+def test_delete_nodes_01(clear_sar, library):  # noqa: F811
+    """
+    Tests for the 'add_node' API.
+    """
+    if not _is_async(library):
+        with SaveRestoreAPI_Threads(base_url=base_url, timeout=2) as SR:
+            SR.set_auth(username=user_username, password=user_password)
+
+            response = SR.add_node(SR.ROOT_NODE_UID, name="Test Folder", nodeType="FOLDER")
+            assert response["name"] == "Test Folder"
+            assert response["nodeType"] == "FOLDER"
+            folder_uid = response["uniqueId"]
+
+            response = SR.add_node(folder_uid, name="Test Config 1", nodeType="CONFIGURATION")
+            assert response["name"] == "Test Config 1"
+            assert response["nodeType"] == "CONFIGURATION"
+            node_uid_1 = response["uniqueId"]
+
+            response = SR.add_node(folder_uid, name="Test Config 2", nodeType="CONFIGURATION")
+            assert response["name"] == "Test Config 2"
+            assert response["nodeType"] == "CONFIGURATION"
+            node_uid_2 = response["uniqueId"]
+
+            SR.delete_nodes([node_uid_1, node_uid_2])
+            SR.delete_nodes([folder_uid])
+
+    else:
+        async def testing():
+            async with SaveRestoreAPI_Async(base_url=base_url, timeout=2) as SR:
+                SR.set_auth(username=user_username, password=user_password)
+
+                response = await SR.add_node(SR.ROOT_NODE_UID, name="Test Folder", nodeType="FOLDER")
+                assert response["name"] == "Test Folder"
+                assert response["nodeType"] == "FOLDER"
+                folder_uid = response["uniqueId"]
+
+                response = await SR.add_node(folder_uid, name="Test Config 1", nodeType="CONFIGURATION")
+                assert response["name"] == "Test Config 1"
+                assert response["nodeType"] == "CONFIGURATION"
+                node_uid_1 = response["uniqueId"]
+
+                response = await SR.add_node(folder_uid, name="Test Config 2", nodeType="CONFIGURATION")
+                assert response["name"] == "Test Config 2"
+                assert response["nodeType"] == "CONFIGURATION"
+                node_uid_2 = response["uniqueId"]
+
+                await SR.delete_nodes([node_uid_1, node_uid_2])
+                await SR.delete_nodes([folder_uid])
+
+        asyncio.run(testing())
+
+
+
+
 def test_comm(clear_sar):  # noqa: F811
     SR = SaveRestoreAPI_Threads(base_url=base_url, timeout=2)
     SR.set_auth(username=user_username, password=user_password)

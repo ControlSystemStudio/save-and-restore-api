@@ -56,6 +56,11 @@ class _SaveRestoreAPI_Threads(_SaveRestoreAPI_Base):
         )
         return self.send_request(method, url, params=params)
 
+    def delete_node(self, nodeId):
+        method, url = self._prepare_delete_node(nodeId=nodeId)
+        print(f"================= method={method}, url={url} =================")  ##
+        return self.send_request(method, url)
+
     def delete_nodes(self, uniqueIds):
         method, url, params = self._prepare_delete_nodes(uniqueIds=uniqueIds)
         return self.send_request(method, url, params=params)

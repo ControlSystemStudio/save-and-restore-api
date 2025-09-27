@@ -53,6 +53,10 @@ class _SaveRestoreAPI_Async(_SaveRestoreAPI_Base):
         )
         return await self.send_request(method, url, params=params)
 
+    async def delete_node(self, nodeId):
+        method, url = self._prepare_delete_node(nodeId=nodeId)
+        return await self.send_request(method, url)
+
     async def delete_nodes(self, uniqueIds):
         method, url, params = self._prepare_delete_nodes(uniqueIds=uniqueIds)
         return await self.send_request(method, url, params=params)

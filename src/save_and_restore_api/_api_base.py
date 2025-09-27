@@ -156,6 +156,10 @@ class _SaveRestoreAPI_Base:
         params.update({"name": name, "nodeType": nodeType})
         return method, url, params
 
+    def _prepare_delete_node(self, *, nodeId):
+        method, url = "DELETE", f"/node/{nodeId}"
+        return method, url
+
     def _prepare_delete_nodes(self, *, uniqueIds):
         method, url = "DELETE", "/node"
         params = uniqueIds
