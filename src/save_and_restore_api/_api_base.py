@@ -143,9 +143,18 @@ class _SaveRestoreAPI_Base:
         params = {"username": username, "password": password}
         return method, url, params
 
-    def _prepare_get_node(self, *, node_uid):
-        method, url = "GET", f"/node/{node_uid}"
+    # =============================================================================================
+    #                         NODE-CONTROLLER API METHODS
+    # =============================================================================================
+
+    def _prepare_get_node(self, *, uniqueNodeId):
+        method, url = "GET", f"/node/{uniqueNodeId}"
         return method, url
+
+    def _prepare_get_nodes(self, *, uniqueIds):
+        method, url = "GET", "/nodes"
+        params = uniqueIds
+        return method, url, params
 
     def _prepare_add_node(self, *, parentNodeId, name, nodeType, **kwargs):
         node_types = ("FOLDER", "CONFIGURATION")
@@ -165,9 +174,15 @@ class _SaveRestoreAPI_Base:
         params = uniqueIds
         return method, url, params
 
-    def _prepare_get_children(self, *, node_uid):
-        method, url = "GET", f"/node/{node_uid}/children"
+    def _prepare_get_children(self, *, uniqueNodeId):
+        method, url = "GET", f"/node/{uniqueNodeId}/children"
         return method, url
+
+    def _prepare_get_parent(self, *, uniqueNodeId):
+        method, url = "GET", f"/node/{uniqueNodeId}/parent"
+        return method, url
+
+    # =============================================================================================
 
     def create_config(self, parent_node_uid, name, pv_list):
         config_dict = {
