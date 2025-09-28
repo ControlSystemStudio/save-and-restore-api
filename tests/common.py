@@ -29,7 +29,7 @@ def clear_sar():
         Remove all nodes from the database.
         """
         with SaveRestoreAPI(base_url=base_url, timeout=2) as SR:
-            SR.set_auth(username=user_username, password=user_password)
+            SR.auth_set(username=user_username, password=user_password)
 
             # Create all nodes. Children always follow the parent
             n_uid = 0

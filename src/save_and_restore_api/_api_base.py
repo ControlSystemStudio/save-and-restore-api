@@ -52,11 +52,26 @@ class _SaveRestoreAPI_Base:
         self._auth = None
 
     @staticmethod
-    def gen_auth(username, password):
+    def auth_gen(username, password):
+        """
+        Generate and return httpx.BasicAuth object based on username and password.
+        The object can be passed as ``auth`` parameter in API calls.
+        """
         return httpx.BasicAuth(username=username, password=password)
 
-    def set_auth(self, *, username, password):
-        self._auth = self.gen_auth(username=username, password=password)
+    def auth_set(self, *, username, password):
+        """
+        Configure authentication for the session based on username and password.
+        If the authentication is configured, there is no need to pass the authentication
+        object with each API call.
+        """
+        self._auth = self.auth_gen(username=username, password=password)
+
+    def auth_clear(self):
+        """
+        Clear authentication for the session.
+        """
+        self._auth = None
 
     # def set_username_password(self, username=None, password=None):
     #     if not isinstance(username, str):
@@ -132,7 +147,7 @@ class _SaveRestoreAPI_Base:
             kwargs.update({"data": data})
         if timeout is not None:
             kwargs.update({"timeout": self._adjust_timeout(timeout)})
-        if method != "GET":
+        if method.upper() != "GET":
             auth = auth or self._auth
             if auth is not None:
                 kwargs.update({"auth": auth})

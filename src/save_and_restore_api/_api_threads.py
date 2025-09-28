@@ -65,7 +65,7 @@ class _SaveRestoreAPI_Threads(_SaveRestoreAPI_Base):
         method, url, params = self._prepare_nodes_get(uniqueIds=uniqueIds)
         return self.send_request(method, url, params=params)
 
-    def node_add(self, parentNodeId, *, name, nodeType, **kwargs):
+    def node_add(self, parentNodeId, *, name, nodeType, auth=None, **kwargs):
         """
         Creates a new node under the specified parent node. Required parameters:
         ``name`` and ``nodeType``. Supported types: ``"FOLDER"``, ``"CONFIGURATION"``.
@@ -75,9 +75,9 @@ class _SaveRestoreAPI_Threads(_SaveRestoreAPI_Base):
         method, url, params = self._prepare_node_add(
             parentNodeId=parentNodeId, name=name, nodeType=nodeType, **kwargs
         )
-        return self.send_request(method, url, params=params)
+        return self.send_request(method, url, params=params, auth=auth)
 
-    def node_delete(self, nodeId):
+    def node_delete(self, nodeId, *, auth=None):
         """
         Deletes the node with specified node ID. The call fails if the node can
         not be deleted.
@@ -85,9 +85,9 @@ class _SaveRestoreAPI_Threads(_SaveRestoreAPI_Base):
         API: DELETE /node/{nodeId}
         """
         method, url = self._prepare_node_delete(nodeId=nodeId)
-        return self.send_request(method, url)
+        return self.send_request(method, url, auth=auth)
 
-    def nodes_delete(self, uniqueIds):
+    def nodes_delete(self, uniqueIds, *, auth=None):
         """
         Deletes multiple nodes specified as a list of UIDs. The call fails if
         any of the nodes can not be deleted.
@@ -95,7 +95,7 @@ class _SaveRestoreAPI_Threads(_SaveRestoreAPI_Base):
         API: DELETE /node
         """
         method, url, params = self._prepare_nodes_delete(uniqueIds=uniqueIds)
-        return self.send_request(method, url, params=params)
+        return self.send_request(method, url, params=params, auth=auth)
 
     def node_get_children(self, uniqueNodeId):
         """
