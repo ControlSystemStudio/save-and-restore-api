@@ -47,7 +47,8 @@ docs = [
   "myst_parser>=0.13",
   "sphinx_copybutton",
   "sphinx_autodoc_typehints",
-  "furo>=2023.08.17",
+  "sphinx_rtd_theme",
+  "numpydoc",
 ]
 
 [tool.setuptools_scm]
