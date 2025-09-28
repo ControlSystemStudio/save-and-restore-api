@@ -47,70 +47,70 @@ class _SaveRestoreAPI_Threads(_SaveRestoreAPI_Base):
     #                         NODE-CONTROLLER API METHODS
     # =============================================================================================
 
-    def get_node(self, uniqueNodeId):
+    def node_get(self, uniqueNodeId):
         """
         Returns the node with specified node UID.
 
         API: GET /node/{uniqueNodeId}
         """
-        method, url = self._prepare_get_node(uniqueNodeId=uniqueNodeId)
+        method, url = self._prepare_node_get(uniqueNodeId=uniqueNodeId)
         return self.send_request(method, url)
 
-    def get_nodes(self, uniqueIds):
+    def nodes_get(self, uniqueIds):
         """
         Returns nodes specified by a list of UIDs.
 
         API: GET /nodes
         """
-        method, url, params = self._prepare_get_nodes(uniqueIds=uniqueIds)
+        method, url, params = self._prepare_nodes_get(uniqueIds=uniqueIds)
         return self.send_request(method, url, params=params)
 
-    def add_node(self, parentNodeId, *, name, nodeType, **kwargs):
+    def node_add(self, parentNodeId, *, name, nodeType, **kwargs):
         """
         Creates a new node under the specified parent node. Required parameters:
         ``name`` and ``nodeType``. Supported types: ``"FOLDER"``, ``"CONFIGURATION"``.
 
         API: PUT /node?parentNodeId={parentNodeId}
         """
-        method, url, params = self._prepare_add_node(
+        method, url, params = self._prepare_node_add(
             parentNodeId=parentNodeId, name=name, nodeType=nodeType, **kwargs
         )
         return self.send_request(method, url, params=params)
 
-    def delete_node(self, nodeId):
+    def node_delete(self, nodeId):
         """
         Deletes the node with specified node ID. The call fails if the node can
         not be deleted.
 
         API: DELETE /node/{nodeId}
         """
-        method, url = self._prepare_delete_node(nodeId=nodeId)
+        method, url = self._prepare_node_delete(nodeId=nodeId)
         return self.send_request(method, url)
 
-    def delete_nodes(self, uniqueIds):
+    def nodes_delete(self, uniqueIds):
         """
         Deletes multiple nodes specified as a list of UIDs. The call fails if
         any of the nodes can not be deleted.
 
         API: DELETE /node
         """
-        method, url, params = self._prepare_delete_nodes(uniqueIds=uniqueIds)
+        method, url, params = self._prepare_nodes_delete(uniqueIds=uniqueIds)
         return self.send_request(method, url, params=params)
 
-    def get_children(self, uniqueNodeId):
+    def node_get_children(self, uniqueNodeId):
         """
         Returns the list of child nodes for the specified node UID.
 
         API: GET /node/{uniqueNodeId}/children
         """
-        method, url = self._prepare_get_children(uniqueNodeId=uniqueNodeId)
+        method, url = self._prepare_node_get_children(uniqueNodeId=uniqueNodeId)
         return self.send_request(method, url)
 
-    def get_parent(self, uniqueNodeId):
+    def node_get_parent(self, uniqueNodeId):
         """
         Returns the parent node for the specified node UID.
 
         API: GET /node/{uniqueNodeId}/parent
         """
-        method, url = self._prepare_get_parent(uniqueNodeId=uniqueNodeId)
+        method, url = self._prepare_node_get_parent(uniqueNodeId=uniqueNodeId)
         return self.send_request(method, url)

@@ -48,48 +48,48 @@ class _SaveRestoreAPI_Async(_SaveRestoreAPI_Base):
     #                         NODE-CONTROLLER API METHODS
     # =============================================================================================
 
-    async def get_node(self, uniqueNodeId):
+    async def node_get(self, uniqueNodeId):
         # Reusing docstrings from the threaded version
-        method, url = self._prepare_get_node(uniqueNodeId=uniqueNodeId)
+        method, url = self._prepare_node_get(uniqueNodeId=uniqueNodeId)
         return await self.send_request(method, url)
 
-    async def get_nodes(self, uniqueIds):
+    async def nodes_get(self, uniqueIds):
         # Reusing docstrings from the threaded version
-        method, url, params = self._prepare_get_nodes(uniqueIds=uniqueIds)
+        method, url, params = self._prepare_nodes_get(uniqueIds=uniqueIds)
         return await self.send_request(method, url, params=params)
 
-    async def add_node(self, parentNodeId, *, name, nodeType, **kwargs):
+    async def node_add(self, parentNodeId, *, name, nodeType, **kwargs):
         # Reusing docstrings from the threaded version
-        method, url, params = self._prepare_add_node(
+        method, url, params = self._prepare_node_add(
             parentNodeId=parentNodeId, name=name, nodeType=nodeType, **kwargs
         )
         return await self.send_request(method, url, params=params)
 
-    async def delete_node(self, nodeId):
+    async def node_delete(self, nodeId):
         # Reusing docstrings from the threaded version
-        method, url = self._prepare_delete_node(nodeId=nodeId)
+        method, url = self._prepare_node_delete(nodeId=nodeId)
         return await self.send_request(method, url)
 
-    async def delete_nodes(self, uniqueIds):
+    async def nodes_delete(self, uniqueIds):
         # Reusing docstrings from the threaded version
-        method, url, params = self._prepare_delete_nodes(uniqueIds=uniqueIds)
+        method, url, params = self._prepare_nodes_delete(uniqueIds=uniqueIds)
         return await self.send_request(method, url, params=params)
 
-    async def get_children(self, uniqueNodeId):
+    async def node_get_children(self, uniqueNodeId):
         # Reusing docstrings from the threaded version
-        method, url = self._prepare_get_children(uniqueNodeId=uniqueNodeId)
+        method, url = self._prepare_node_get_children(uniqueNodeId=uniqueNodeId)
         return await self.send_request(method, url)
 
-    async def get_parent(self, uniqueNodeId):
+    async def node_get_parent(self, uniqueNodeId):
         # Reusing docstrings from the threaded version
-        method, url = self._prepare_get_parent(uniqueNodeId=uniqueNodeId)
+        method, url = self._prepare_node_get_parent(uniqueNodeId=uniqueNodeId)
         return await self.send_request(method, url)
 
 
-_SaveRestoreAPI_Async.get_node.__doc__ = _SaveRestoreAPI_Threads.get_node.__doc__
-_SaveRestoreAPI_Async.get_nodes.__doc__ = _SaveRestoreAPI_Threads.get_nodes.__doc__
-_SaveRestoreAPI_Async.add_node.__doc__ = _SaveRestoreAPI_Threads.add_node.__doc__
-_SaveRestoreAPI_Async.delete_node.__doc__ = _SaveRestoreAPI_Threads.delete_node.__doc__
-_SaveRestoreAPI_Async.delete_nodes.__doc__ = _SaveRestoreAPI_Threads.delete_nodes.__doc__
-_SaveRestoreAPI_Async.get_children.__doc__ = _SaveRestoreAPI_Threads.get_children.__doc__
-_SaveRestoreAPI_Async.get_parent.__doc__ = _SaveRestoreAPI_Threads.get_parent.__doc__
+_SaveRestoreAPI_Async.node_get.__doc__ = _SaveRestoreAPI_Threads.node_get.__doc__
+_SaveRestoreAPI_Async.nodes_get.__doc__ = _SaveRestoreAPI_Threads.nodes_get.__doc__
+_SaveRestoreAPI_Async.node_add.__doc__ = _SaveRestoreAPI_Threads.node_add.__doc__
+_SaveRestoreAPI_Async.node_delete.__doc__ = _SaveRestoreAPI_Threads.node_delete.__doc__
+_SaveRestoreAPI_Async.nodes_delete.__doc__ = _SaveRestoreAPI_Threads.nodes_delete.__doc__
+_SaveRestoreAPI_Async.node_get_children.__doc__ = _SaveRestoreAPI_Threads.node_get_children.__doc__
+_SaveRestoreAPI_Async.node_get_parent.__doc__ = _SaveRestoreAPI_Threads.node_get_parent.__doc__

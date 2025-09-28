@@ -147,16 +147,16 @@ class _SaveRestoreAPI_Base:
     #                         NODE-CONTROLLER API METHODS
     # =============================================================================================
 
-    def _prepare_get_node(self, *, uniqueNodeId):
+    def _prepare_node_get(self, *, uniqueNodeId):
         method, url = "GET", f"/node/{uniqueNodeId}"
         return method, url
 
-    def _prepare_get_nodes(self, *, uniqueIds):
+    def _prepare_nodes_get(self, *, uniqueIds):
         method, url = "GET", "/nodes"
         params = uniqueIds
         return method, url, params
 
-    def _prepare_add_node(self, *, parentNodeId, name, nodeType, **kwargs):
+    def _prepare_node_add(self, *, parentNodeId, name, nodeType, **kwargs):
         node_types = ("FOLDER", "CONFIGURATION")
         if nodeType not in node_types:
             raise self.RequestParameterError(f"Invalid nodeType: {nodeType!r}. Supported types: {node_types}.")
@@ -165,20 +165,20 @@ class _SaveRestoreAPI_Base:
         params.update({"name": name, "nodeType": nodeType})
         return method, url, params
 
-    def _prepare_delete_node(self, *, nodeId):
+    def _prepare_node_delete(self, *, nodeId):
         method, url = "DELETE", f"/node/{nodeId}"
         return method, url
 
-    def _prepare_delete_nodes(self, *, uniqueIds):
+    def _prepare_nodes_delete(self, *, uniqueIds):
         method, url = "DELETE", "/node"
         params = uniqueIds
         return method, url, params
 
-    def _prepare_get_children(self, *, uniqueNodeId):
+    def _prepare_node_get_children(self, *, uniqueNodeId):
         method, url = "GET", f"/node/{uniqueNodeId}/children"
         return method, url
 
-    def _prepare_get_parent(self, *, uniqueNodeId):
+    def _prepare_node_get_parent(self, *, uniqueNodeId):
         method, url = "GET", f"/node/{uniqueNodeId}/parent"
         return method, url
 

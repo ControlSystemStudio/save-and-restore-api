@@ -125,9 +125,9 @@ def main():
     #     SR.open()
     #     SR.login()
 
-    #     data = SR.get_node(SR.ROOT_NODE_UID)
+    #     data = SR.node_get(SR.ROOT_NODE_UID)
     #     print(f"data=\n{pprint.pformat(data)}")
-    #     data = SR.get_children(data["uniqueId"])
+    #     data = SR.node_get_children(data["uniqueId"])
     #     print(f"data=\n{pprint.pformat(data)}")
     #     parent_node_uid = data[0]["uniqueId"]
     #     name = "test5"
