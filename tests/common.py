@@ -108,3 +108,28 @@ def clear_sar():
     _clear()
     yield
     _clear()
+
+
+@pytest.fixture
+def ioc():
+    """
+    Reset simulated IOC to initial values before and after the test
+    """
+
+    def _reset_ioc():
+        from epics import caput
+
+        caput("simulated:A", 1.0)
+        caput("simulated:B", 2.0)
+        caput("simulated:C", 3.0)
+        caput("simulated:D", 4.0)
+        caput("simulated:E", 5.0)
+        caput("simulated:F", 6.0)
+        caput("simulated:G", 7.0)
+        caput("simulated:H", 8.0)
+        caput("simulated:I", 9.0)
+        caput("simulated:J", 10.0)
+
+    _reset_ioc()
+    yield
+    _reset_ioc()
