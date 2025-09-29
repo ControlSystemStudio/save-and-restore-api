@@ -1,6 +1,5 @@
 # import getpass
 import json
-import pprint
 from collections.abc import Mapping
 
 import httpx
@@ -125,7 +124,14 @@ class _SaveRestoreAPI_Base:
                 response_text = ""
                 if client_response.content:
                     try:
-                        response_text = exc.response.json()["detail"]
+                        _, response_text = exc.response.json(), ""
+                        if isinstance(_, dict):
+                            if "detail" in _:
+                                response_text = _["detail"]
+                            elif "error" in _:
+                                response_text = _["error"]
+                            else:
+                                response_text = exc.response.text
                     except json.JSONDecodeError:
                         response_text = exc.response.text
                 message = f"{exc.response.status_code}: {response_text} {exc.request.url}"
@@ -198,33 +204,53 @@ class _SaveRestoreAPI_Base:
         return method, url
 
     # =============================================================================================
+    #                         CONFIGURATION-CONTROLLER API METHODS
+    # =============================================================================================
 
-    def create_config(self, parent_node_uid, name, pv_list):
-        config_dict = {
-            "configurationNode": {
-                "name": name,
-                "nodeType": "CONFIGURATION",
-                "userName": self._username,
-            },
-            "configurationData": {
-                "pvList": pv_list,
-            },
-        }
-        print(f"config_dict=\n{pprint.pformat(config_dict)}")
-        return self.send_request("PUT", f"/config?parentNodeId={parent_node_uid}", json=config_dict)
+    def _prepare_config_get(self, *, uniqueNodeId):
+        method, url = "GET", f"/config/{uniqueNodeId}"
+        return method, url
 
-    def update_config(self, node_uid, name, pv_list):
-        config_dict = {
-            "configurationNode": {
-                "name": name,
-                "nodeType": "CONFIGURATION",
-                "userName": self._username,
-                "uniqueId": node_uid,
-            },
-            "configurationData": {
-                "pvList": pv_list,
-            },
-        }
-        print(f"config_dict=\n{pprint.pformat(config_dict)}")
-        # return self.send_request("POST", f"/config/{node_uid}", json=config_dict)
-        return self.send_request("POST", "/config", json=config_dict)
+    def _prepare_config_create(self, *, parentNodeId, configurationNode, configurationData):
+        method, url = "PUT", f"/config?parentNodeId={parentNodeId}"
+        configurationData = configurationData or {}
+        params = {"configurationNode": configurationNode, "configurationData": configurationData}
+        return method, url, params
+
+    def _prepare_config_update(self, *, configurationNode, configurationData):
+        method, url = "POST", "/config"
+        configurationData = configurationData or {}
+        params = {"configurationNode": configurationNode, "configurationData": configurationData}
+        return method, url, params
+
+    # =============================================================================================
+
+    # def create_config(self, parent_node_uid, name, pv_list):
+    #     config_dict = {
+    #         "configurationNode": {
+    #             "name": name,
+    #             "nodeType": "CONFIGURATION",
+    #             "userName": self._username,
+    #         },
+    #         "configurationData": {
+    #             "pvList": pv_list,
+    #         },
+    #     }
+    #     print(f"config_dict=\n{pprint.pformat(config_dict)}")
+    #     return self.send_request("PUT", f"/config?parentNodeId={parent_node_uid}", json=config_dict)
+
+    # def update_config(self, node_uid, name, pv_list):
+    #     config_dict = {
+    #         "configurationNode": {
+    #             "name": name,
+    #             "nodeType": "CONFIGURATION",
+    #             "userName": self._username,
+    #             "uniqueId": node_uid,
+    #         },
+    #         "configurationData": {
+    #             "pvList": pv_list,
+    #         },
+    #     }
+    #     print(f"config_dict=\n{pprint.pformat(config_dict)}")
+    #     # return self.send_request("POST", f"/config/{node_uid}", json=config_dict)
+    #     return self.send_request("POST", "/config", json=config_dict)

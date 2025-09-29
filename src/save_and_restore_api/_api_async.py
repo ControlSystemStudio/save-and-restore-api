@@ -85,6 +85,29 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         method, url = self._prepare_node_get_parent(uniqueNodeId=uniqueNodeId)
         return await self.send_request(method, url)
 
+    # =============================================================================================
+    #                         CONFIGURATION-CONTROLLER API METHODS
+    # =============================================================================================
+
+    async def config_get(self, uniqueNodeId):
+        # Reusing docstrings from the threaded version
+        method, url = self._prepare_config_get(uniqueNodeId=uniqueNodeId)
+        return await self.send_request(method, url)
+
+    async def config_create(self, parentNodeId, *, configurationNode, configurationData, auth=None):
+        # Reusing docstrings from the threaded version
+        method, url, params = self._prepare_config_create(
+            parentNodeId=parentNodeId, configurationNode=configurationNode, configurationData=configurationData
+        )
+        return await self.send_request(method, url, params=params, auth=auth)
+
+    async def config_update(self, *, configurationNode, configurationData=None, auth=None):
+        # Reusing docstrings from the threaded version
+        method, url, params = self._prepare_config_update(
+            configurationNode=configurationNode, configurationData=configurationData
+        )
+        return await self.send_request(method, url, params=params, auth=auth)
+
 
 SaveRestoreAPI.node_get.__doc__ = _SaveRestoreAPI_Threads.node_get.__doc__
 SaveRestoreAPI.nodes_get.__doc__ = _SaveRestoreAPI_Threads.nodes_get.__doc__
@@ -93,3 +116,6 @@ SaveRestoreAPI.node_delete.__doc__ = _SaveRestoreAPI_Threads.node_delete.__doc__
 SaveRestoreAPI.nodes_delete.__doc__ = _SaveRestoreAPI_Threads.nodes_delete.__doc__
 SaveRestoreAPI.node_get_children.__doc__ = _SaveRestoreAPI_Threads.node_get_children.__doc__
 SaveRestoreAPI.node_get_parent.__doc__ = _SaveRestoreAPI_Threads.node_get_parent.__doc__
+SaveRestoreAPI.config_get.__doc__ = _SaveRestoreAPI_Threads.config_get.__doc__
+SaveRestoreAPI.config_create.__doc__ = _SaveRestoreAPI_Threads.config_create.__doc__
+SaveRestoreAPI.config_update.__doc__ = _SaveRestoreAPI_Threads.config_update.__doc__

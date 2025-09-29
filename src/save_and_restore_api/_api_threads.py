@@ -114,3 +114,38 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         """
         method, url = self._prepare_node_get_parent(uniqueNodeId=uniqueNodeId)
         return self.send_request(method, url)
+
+    # =============================================================================================
+    #                         CONFIGURATION-CONTROLLER API METHODS
+    # =============================================================================================
+
+    def config_get(self, uniqueNodeId):
+        """
+        Returns the config data for the node with specified node UID.
+
+        API: GET /config/{uniqueNodeId}
+        """
+        method, url = self._prepare_config_get(uniqueNodeId=uniqueNodeId)
+        return self.send_request(method, url)
+
+    def config_create(self, parentNodeId, *, configurationNode, configurationData, auth=None):
+        """
+        Creates a new configuration node under the specified parent node.
+
+        API: PUT /config?parentNodeId={parentNodeId}
+        """
+        method, url, params = self._prepare_config_create(
+            parentNodeId=parentNodeId, configurationNode=configurationNode, configurationData=configurationData
+        )
+        return self.send_request(method, url, params=params, auth=auth)
+
+    def config_update(self, *, configurationNode, configurationData=None, auth=None):
+        """
+        Updates an existing configuration node.
+
+        API: POST /config
+        """
+        method, url, params = self._prepare_config_update(
+            configurationNode=configurationNode, configurationData=configurationData
+        )
+        return self.send_request(method, url, params=params, auth=auth)
