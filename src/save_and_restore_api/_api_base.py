@@ -224,6 +224,24 @@ class _SaveRestoreAPI_Base:
         return method, url, params
 
     # =============================================================================================
+    #                         TAG-CONTROLLER API METHODS
+    # =============================================================================================
+
+    def _prepare_tags_get(self):
+        method, url = "GET", "/tags"
+        return method, url
+
+    def _prepare_tags_add(self, *, uniqueNodeIds, tag):
+        method, url = "POST", "/tags"
+        params = {"uniqueNodeIds": uniqueNodeIds, "tag": tag}
+        return method, url, params
+
+    def _prepare_tags_delete(self, *, uniqueNodeIds, tag):
+        method, url = "DELETE", "/tags"
+        params = {"uniqueNodeIds": uniqueNodeIds, "tag": tag}
+        return method, url, params
+
+    # =============================================================================================
 
     # def create_config(self, parent_node_uid, name, pv_list):
     #     config_dict = {

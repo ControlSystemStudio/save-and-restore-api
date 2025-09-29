@@ -164,3 +164,36 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
             configurationNode=configurationNode, configurationData=configurationData
         )
         return self.send_request(method, url, params=params, auth=auth)
+
+    # =============================================================================================
+    #                         TAG-CONTROLLER API METHODS
+    # =============================================================================================
+
+    def tags_get(self):
+        """
+        Returns all existing tags.
+
+        API: GET /tags
+        """
+        method, url = self._prepare_tags_get()
+        return self.send_request(method, url)
+
+    def tags_add(self, *, uniqueNodeIds, tag, auth=None):
+        """
+        Adds ``tag`` to nodes specified by a list of UIDs ``uniqueNodeIds``. The ``tag``
+        dictionary must contain the ``name`` key and optionally ``comment`` key.
+
+        API: POST /tags
+        """
+        method, url, params = self._prepare_tags_add(uniqueNodeIds=uniqueNodeIds, tag=tag)
+        return self.send_request(method, url, params=params, auth=auth)
+
+    def tags_delete(self, *, uniqueNodeIds, tag, auth=None):
+        """
+        Deletes ``tag`` to nodes specified by a list of UIDs ``uniqueNodeIds``. The ``tag``
+        dictionary must contain the ``name`` key and optionally ``comment`` key.
+
+        API: DELETE /tags
+        """
+        method, url, params = self._prepare_tags_delete(uniqueNodeIds=uniqueNodeIds, tag=tag)
+        return self.send_request(method, url, params=params, auth=auth)

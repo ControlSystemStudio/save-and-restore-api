@@ -108,6 +108,39 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         )
         return await self.send_request(method, url, params=params, auth=auth)
 
+    # =============================================================================================
+    #                         TAG-CONTROLLER API METHODS
+    # =============================================================================================
+
+    async def tags_get(self):
+        """
+        Returns all existing tags.
+
+        API: GET /tags
+        """
+        method, url = self._prepare_tags_get()
+        return await self.send_request(method, url)
+
+    async def tags_add(self, *, uniqueNodeIds, tag, auth=None):
+        """
+        Adds ``tag`` to nodes specified by a list of UIDs ``uniqueNodeIds``. The ``tag``
+        dictionary must contain the ``name`` key and optionally ``comment`` key.
+
+        API: POST /tags
+        """
+        method, url, params = self._prepare_tags_add(uniqueNodeIds=uniqueNodeIds, tag=tag)
+        return await self.send_request(method, url, params=params, auth=auth)
+
+    async def tags_delete(self, *, uniqueNodeIds, tag, auth=None):
+        """
+        Deletes ``tag`` to nodes specified by a list of UIDs ``uniqueNodeIds``. The ``tag``
+        dictionary must contain the ``name`` key and optionally ``comment`` key.
+
+        API: DELETE /tags
+        """
+        method, url, params = self._prepare_tags_delete(uniqueNodeIds=uniqueNodeIds, tag=tag)
+        return await self.send_request(method, url, params=params, auth=auth)
+
 
 SaveRestoreAPI.node_get.__doc__ = _SaveRestoreAPI_Threads.node_get.__doc__
 SaveRestoreAPI.nodes_get.__doc__ = _SaveRestoreAPI_Threads.nodes_get.__doc__
@@ -119,3 +152,6 @@ SaveRestoreAPI.node_get_parent.__doc__ = _SaveRestoreAPI_Threads.node_get_parent
 SaveRestoreAPI.config_get.__doc__ = _SaveRestoreAPI_Threads.config_get.__doc__
 SaveRestoreAPI.config_create.__doc__ = _SaveRestoreAPI_Threads.config_create.__doc__
 SaveRestoreAPI.config_update.__doc__ = _SaveRestoreAPI_Threads.config_update.__doc__
+SaveRestoreAPI.tags_get.__doc__ = _SaveRestoreAPI_Threads.tags_get.__doc__
+SaveRestoreAPI.tags_add.__doc__ = _SaveRestoreAPI_Threads.tags_add.__doc__
+SaveRestoreAPI.tags_delete.__doc__ = _SaveRestoreAPI_Threads.tags_delete.__doc__
