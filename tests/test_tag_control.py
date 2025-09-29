@@ -11,8 +11,6 @@ from .common import (
     base_url,
     clear_sar,  # noqa: F401
     create_root_folder,
-    user_password,  # noqa: F401
-    user_username,
 )
 
 # =============================================================================================
@@ -24,97 +22,117 @@ from .common import (
 @pytest.mark.parametrize("usesetauth", [True, False])
 @pytest.mark.parametrize("library", ["THREADS", "ASYNC"])
 # fmt: on
-def test_config_create_01(clear_sar, library, usesetauth):  # noqa: F811
+def test_tags_01(clear_sar, library, usesetauth):  # noqa: F811
     """
-    Tests for the 'config_create' and 'config_get' API.
+    Tests for the 'tags_get', 'tags_add' and 'tags_delete' API.
     """
 
     root_folder_uid = create_root_folder()
-
-    pv_list = [
-            {
-                "pvName": "13SIM1:{SimDetector-Cam:1}cam1:BinX"
-            },
-            {
-                "pvName": "13SIM1:{SimDetector-Cam:1}cam1:BinY",
-                "comparison": {
-                    "comparisonMode": "ABSOLUTE",
-                    "tolerance": 2.7
-                }
-            },
-            {
-                "pvName": "13SIM1:{SimDetector-Cam:2}cam2:BinX",
-                "readbackPvName": None,
-                "readOnly": False,
-            },
-            {
-                "pvName": "13SIM1:{SimDetector-Cam:2}cam2:BinY",
-                "readbackPvName": None,
-                "readOnly": False,
-            }
-    ]
-
-    configurationNode = {
-        "name": "Config",
-    }
-    configurationData = {
-        "pvList": pv_list,
-    }
 
     if not _is_async(library):
         with SaveRestoreAPI_Threads(base_url=base_url, timeout=2) as SR:
             auth = _select_auth(SR=SR, usesetauth=usesetauth)
 
-            response = SR.node_add(root_folder_uid, name="Child Folder", nodeType="FOLDER", **auth)
+            response = SR.node_add(root_folder_uid, name="folder", nodeType="FOLDER", **auth)
             folder_uid = response["uniqueId"]
 
+            response = SR.config_create(
+                folder_uid, configurationNode={"name": "config_1"}, configurationData={"pvList": []}, **auth
+            )
+            config_1_uid = response["configurationNode"]["uniqueId"]
 
             response = SR.config_create(
-                folder_uid, configurationNode=configurationNode, configurationData=configurationData, **auth
+                folder_uid, configurationNode={"name": "config_2"}, configurationData={"pvList": []}, **auth
             )
-            assert response["configurationNode"]["name"] == "Config"
-            assert response["configurationNode"]["nodeType"] == "CONFIGURATION"
-            assert response["configurationNode"]["userName"] == user_username
-            assert len(response["configurationData"]["pvList"]) == len(pv_list)
+            config_2_uid = response["configurationNode"]["uniqueId"]
 
-            config_uid = response["configurationNode"]["uniqueId"]
+            tag_1 = {"name": "tag_1"}
+            tag_2 = {"name": "tag_2", "comment": "This is tag 2"}
 
-            response = SR.config_get(config_uid)
-            assert response["uniqueId"] == config_uid
-            assert len(response["pvList"]) == len(pv_list)
+            response = SR.tags_get()
+            assert len(response) == 0
 
-            response = SR.node_get(config_uid)
-            assert response["uniqueId"] == config_uid
-            assert response["name"] == "Config"
-            assert response["nodeType"] == "CONFIGURATION"
-            assert response["userName"] == user_username
+            response = SR.tags_add(uniqueNodeIds=[config_1_uid], tag=tag_1, **auth)
+            assert len(response) == 1
+            assert response[0]["uniqueId"] == config_1_uid
+            assert [_["name"] for _ in response[0]["tags"]] == ["tag_1"]
+
+            response = SR.tags_add(uniqueNodeIds=[config_1_uid, config_2_uid, folder_uid], tag=tag_2, **auth)
+            assert len(response) == 3
+            assert response[0]["uniqueId"] == config_1_uid
+            assert [_["name"] for _ in response[0]["tags"]] == ["tag_1", "tag_2"]
+            assert response[1]["uniqueId"] == config_2_uid
+            assert [_["name"] for _ in response[1]["tags"]] == ["tag_2"]
+            assert response[2]["uniqueId"] == folder_uid
+            assert [_["name"] for _ in response[2]["tags"]] == ["tag_2"]
+
+            response = SR.tags_get()  # Returns the list of ALL tags
+            assert len(response) == 4
+
+            response = SR.tags_delete(uniqueNodeIds=[config_1_uid, folder_uid], tag={"name": "tag_2"}, **auth)
+            assert len(response) == 2
+            assert response[0]["uniqueId"] == config_1_uid
+            assert [_["name"] for _ in response[0]["tags"]] == ["tag_1"]
+            assert response[1]["uniqueId"] == folder_uid
+            assert [_["name"] for _ in response[1]["tags"]] == []
+
+            response = SR.tags_get()
+            assert len(response) == 2
 
     else:
         async def testing():
             async with SaveRestoreAPI_Async(base_url=base_url, timeout=2) as SR:
                 auth = _select_auth(SR=SR, usesetauth=usesetauth)
 
-                response = await SR.node_add(root_folder_uid, name="Child Folder", nodeType="FOLDER", **auth)
+                response = await SR.node_add(root_folder_uid, name="folder", nodeType="FOLDER", **auth)
                 folder_uid = response["uniqueId"]
 
                 response = await SR.config_create(
-                    folder_uid, configurationNode=configurationNode, configurationData=configurationData, **auth
+                    folder_uid, configurationNode={"name": "config_1"}, configurationData={"pvList": []}, **auth
                 )
-                assert response["configurationNode"]["name"] == "Config"
-                assert response["configurationNode"]["nodeType"] == "CONFIGURATION"
-                assert response["configurationNode"]["userName"] == user_username
-                assert len(response["configurationData"]["pvList"]) == len(pv_list)
+                config_1_uid = response["configurationNode"]["uniqueId"]
 
-                config_uid = response["configurationNode"]["uniqueId"]
+                response = await SR.config_create(
+                    folder_uid, configurationNode={"name": "config_2"}, configurationData={"pvList": []}, **auth
+                )
+                config_2_uid = response["configurationNode"]["uniqueId"]
 
-                response = await SR.config_get(config_uid)
-                assert response["uniqueId"] == config_uid
-                assert len(response["pvList"]) == len(pv_list)
+                tag_1 = {"name": "tag_1"}
+                tag_2 = {"name": "tag_2", "comment": "This is tag 2"}
 
-                response = await SR.node_get(config_uid)
-                assert response["uniqueId"] == config_uid
-                assert response["name"] == "Config"
-                assert response["nodeType"] == "CONFIGURATION"
-                assert response["userName"] == user_username
+                response = await SR.tags_get()
+                assert len(response) == 0
+
+                response = await SR.tags_add(uniqueNodeIds=[config_1_uid], tag=tag_1, **auth)
+                assert len(response) == 1
+                assert response[0]["uniqueId"] == config_1_uid
+                assert [_["name"] for _ in response[0]["tags"]] == ["tag_1"]
+
+                response = await SR.tags_add(
+                    uniqueNodeIds=[config_1_uid, config_2_uid, folder_uid], tag=tag_2, **auth
+                )
+                assert len(response) == 3
+                assert response[0]["uniqueId"] == config_1_uid
+                assert [_["name"] for _ in response[0]["tags"]] == ["tag_1", "tag_2"]
+                assert response[1]["uniqueId"] == config_2_uid
+                assert [_["name"] for _ in response[1]["tags"]] == ["tag_2"]
+                assert response[2]["uniqueId"] == folder_uid
+                assert [_["name"] for _ in response[2]["tags"]] == ["tag_2"]
+
+                response = await SR.tags_get()  # Returns the list of ALL tags
+                assert len(response) == 4
+
+                response = await SR.tags_delete(
+                    uniqueNodeIds=[config_1_uid, folder_uid], tag={"name": "tag_2"}, **auth
+                )
+                assert len(response) == 2
+                assert response[0]["uniqueId"] == config_1_uid
+                assert [_["name"] for _ in response[0]["tags"]] == ["tag_1"]
+                assert response[1]["uniqueId"] == folder_uid
+                assert [_["name"] for _ in response[1]["tags"]] == []
+
+                response = await SR.tags_get()
+                assert len(response) == 2
+
 
         asyncio.run(testing())
