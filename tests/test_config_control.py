@@ -10,6 +10,7 @@ from .common import (
     _select_auth,
     base_url,
     clear_sar,  # noqa: F401
+    create_root_folder,
     user_password,  # noqa: F401
     user_username,
 )
@@ -27,6 +28,8 @@ def test_config_create_01(clear_sar, library, usesetauth):  # noqa: F811
     """
     Tests for the 'config_create' and 'config_get' API.
     """
+
+    root_folder_uid = create_root_folder()
 
     pv_list = [
             {
@@ -62,7 +65,7 @@ def test_config_create_01(clear_sar, library, usesetauth):  # noqa: F811
         with SaveRestoreAPI_Threads(base_url=base_url, timeout=2) as SR:
             auth = _select_auth(SR=SR, usesetauth=usesetauth)
 
-            response = SR.node_add(SR.ROOT_NODE_UID, name="Child Folder", nodeType="FOLDER", **auth)
+            response = SR.node_add(root_folder_uid, name="Child Folder", nodeType="FOLDER", **auth)
             folder_uid = response["uniqueId"]
 
 
@@ -91,7 +94,7 @@ def test_config_create_01(clear_sar, library, usesetauth):  # noqa: F811
             async with SaveRestoreAPI_Async(base_url=base_url, timeout=2) as SR:
                 auth = _select_auth(SR=SR, usesetauth=usesetauth)
 
-                response = await SR.node_add(SR.ROOT_NODE_UID, name="Child Folder", nodeType="FOLDER", **auth)
+                response = await SR.node_add(root_folder_uid, name="Child Folder", nodeType="FOLDER", **auth)
                 folder_uid = response["uniqueId"]
 
                 response = await SR.config_create(
@@ -126,6 +129,8 @@ def test_config_update_01(clear_sar, library, usesetauth):  # noqa: F811
     Tests for the 'config_update' API.
     """
 
+    root_folder_uid = create_root_folder()
+
     pv_list1 = [{"pvName": "13SIM1:{SimDetector-Cam:1}cam1:BinY"}]
     pv_list2 = [{"pvName": "13SIM1:{SimDetector-Cam:1}cam1:BinX"}]
 
@@ -133,7 +138,7 @@ def test_config_update_01(clear_sar, library, usesetauth):  # noqa: F811
         with SaveRestoreAPI_Threads(base_url=base_url, timeout=2) as SR:
             auth = _select_auth(SR=SR, usesetauth=usesetauth)
 
-            response = SR.node_add(SR.ROOT_NODE_UID, name="Child Folder", nodeType="FOLDER", **auth)
+            response = SR.node_add(root_folder_uid, name="Child Folder", nodeType="FOLDER", **auth)
             folder_uid = response["uniqueId"]
 
             response = SR.config_create(
@@ -179,7 +184,7 @@ def test_config_update_01(clear_sar, library, usesetauth):  # noqa: F811
             async with SaveRestoreAPI_Async(base_url=base_url, timeout=2) as SR:
                 auth = _select_auth(SR=SR, usesetauth=usesetauth)
 
-                response = await SR.node_add(SR.ROOT_NODE_UID, name="Child Folder", nodeType="FOLDER", **auth)
+                response = await SR.node_add(root_folder_uid, name="Child Folder", nodeType="FOLDER", **auth)
                 folder_uid = response["uniqueId"]
 
                 response = await SR.config_create(
