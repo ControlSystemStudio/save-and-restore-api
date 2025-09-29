@@ -121,7 +121,8 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
     def config_get(self, uniqueNodeId):
         """
-        Returns the config data for the node with specified node UID.
+        Returns the config data for the node with specified node UID. Returns only the configuration
+        data. To get the node metadata use ``node_get()``.
 
         API: GET /config/{uniqueNodeId}
         """
@@ -130,7 +131,19 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
     def config_create(self, parentNodeId, *, configurationNode, configurationData, auth=None):
         """
-        Creates a new configuration node under the specified parent node.
+        Creates a new configuration node under the specified parent node. Parameters:
+        ``configurationNode`` - the node metadata, ``configurationData`` - the configuration data.
+
+        Minimum required fields:
+
+        configurationNode = {"name": "test_config"}
+        configurationData = {"pvList": [{"name": "PV1"}, {"name": "PV2"}]}
+
+        The fields ``uniqueId``, ``nodeType``, ``userName`` in ``configurationNode`` are ignored
+        and overwritten by the server.
+
+        The function returns the dictionary with ``configurationNode`` and ``configurationData``
+        as returned by the server.
 
         API: PUT /config?parentNodeId={parentNodeId}
         """
@@ -141,7 +154,9 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
     def config_update(self, *, configurationNode, configurationData=None, auth=None):
         """
-        Updates an existing configuration node.
+        Updates an existing configuration node. Parameters ``configurationNode`` and ``configurationData``
+        should be loaded using ``node_get()`` and ``config_get()`` respectively. Both parameters must
+        contain correct ``uniqueID`` field values.
 
         API: POST /config
         """

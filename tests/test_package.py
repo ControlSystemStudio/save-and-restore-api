@@ -11,6 +11,7 @@ from save_and_restore_api.aio import SaveRestoreAPI as SaveRestoreAPI_Async
 
 from .common import (
     _is_async,
+    _select_auth,
     admin_password,
     admin_username,
     base_url,
@@ -20,15 +21,6 @@ from .common import (
     user_password,
     user_username,
 )
-
-
-def _select_auth(*, SR, usesetauth):
-    auth = {}
-    if usesetauth:
-        SR.auth_set(username=user_username, password=user_password)
-    else:
-        auth["auth"] = SR.auth_gen(username=user_username, password=user_password)
-    return auth
 
 
 def test_version_01():
@@ -425,112 +417,6 @@ def test_node_get_parent_01(clear_sar, library, usesetauth):  # noqa: F811
                 assert response["nodeType"] == "FOLDER"
 
         asyncio.run(testing())
-
-
-# =============================================================================================
-#                         CONFIGURATION-CONTROLLER API METHODS
-# =============================================================================================
-
-
-# fmt: off
-@pytest.mark.parametrize("usesetauth", [True, False])
-@pytest.mark.parametrize("library", ["THREADS", "ASYNC"])
-# fmt: on
-def test_config_create_01(clear_sar, library, usesetauth):  # noqa: F811
-    """
-    Tests for the 'config_create' and 'config_get' API.
-    """
-
-    pv_list = [
-            {
-                "pvName": "13SIM1:{SimDetector-Cam:1}cam1:BinX"
-            },
-            {
-                "pvName": "13SIM1:{SimDetector-Cam:1}cam1:BinY",
-                "comparison": {
-                    "comparisonMode": "ABSOLUTE",
-                    "tolerance": 2.7
-                }
-            },
-            {
-                "pvName": "13SIM1:{SimDetector-Cam:2}cam2:BinX",
-                "readbackPvName": None,
-                "readOnly": False,
-            },
-            {
-                "pvName": "13SIM1:{SimDetector-Cam:2}cam2:BinY",
-                "readbackPvName": None,
-                "readOnly": False,
-            }
-    ]
-
-    configurationNode = {
-        "name": "Config",
-    }
-    configurationData = {
-        "pvList": pv_list,
-    }
-
-    if not _is_async(library):
-        with SaveRestoreAPI_Threads(base_url=base_url, timeout=2) as SR:
-            auth = _select_auth(SR=SR, usesetauth=usesetauth)
-
-            response = SR.node_add(SR.ROOT_NODE_UID, name="Child Folder", nodeType="FOLDER", **auth)
-            folder_uid = response["uniqueId"]
-
-
-            response = SR.config_create(
-                folder_uid, configurationNode=configurationNode, configurationData=configurationData, **auth
-            )
-            assert response["configurationNode"]["name"] == "Config"
-            assert response["configurationNode"]["nodeType"] == "CONFIGURATION"
-            assert response["configurationNode"]["userName"] == user_username
-            assert len(response["configurationData"]["pvList"]) == len(pv_list)
-
-            config_uid = response["configurationNode"]["uniqueId"]
-
-            response = SR.config_get(config_uid)
-            assert response["uniqueId"] == config_uid
-            assert len(response["pvList"]) == len(pv_list)
-
-            response = SR.node_get(config_uid)
-            assert response["uniqueId"] == config_uid
-            assert response["name"] == "Config"
-            assert response["nodeType"] == "CONFIGURATION"
-            assert response["userName"] == user_username
-
-    else:
-        async def testing():
-            async with SaveRestoreAPI_Async(base_url=base_url, timeout=2) as SR:
-                auth = _select_auth(SR=SR, usesetauth=usesetauth)
-
-                response = await SR.node_add(SR.ROOT_NODE_UID, name="Child Folder", nodeType="FOLDER", **auth)
-                folder_uid = response["uniqueId"]
-
-                response = await SR.config_create(
-                    folder_uid, configurationNode=configurationNode, configurationData=configurationData, **auth
-                )
-                assert response["configurationNode"]["name"] == "Config"
-                assert response["configurationNode"]["nodeType"] == "CONFIGURATION"
-                assert response["configurationNode"]["userName"] == user_username
-                assert len(response["configurationData"]["pvList"]) == len(pv_list)
-
-                config_uid = response["configurationNode"]["uniqueId"]
-
-                response = await SR.config_get(config_uid)
-                assert response["uniqueId"] == config_uid
-                assert len(response["pvList"]) == len(pv_list)
-
-                response = await SR.node_get(config_uid)
-                assert response["uniqueId"] == config_uid
-                assert response["name"] == "Config"
-                assert response["nodeType"] == "CONFIGURATION"
-                assert response["userName"] == user_username
-
-        asyncio.run(testing())
-
-
-
 
 
 def test_comm(clear_sar):  # noqa: F811

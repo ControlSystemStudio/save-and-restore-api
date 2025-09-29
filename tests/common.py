@@ -18,6 +18,32 @@ def _is_async(library):
         raise ValueError(f"Unknown library: {library!r}")
 
 
+def _select_auth(*, SR, usesetauth):
+    """
+    Switch between using ``SR.auth_set()`` to set authentication for the whole session or
+    using ``SR.auth_gen()`` to generate authentication object and pass it with each request.
+
+    Parameters
+    ----------
+    SR : SaveRestoreAPI
+        Instance of SaveRestoreAPI
+    usesetauth : bool
+        If True, use ``SR.auth_set()``, otherwise use ``SR.auth_gen()``.
+
+    Returns
+    -------
+    dict
+        If ``usesetauth`` is False, returns dictionary with authentication to be passed with each request,
+        otherwise returns empty dictionary.
+    """
+    auth = {}
+    if usesetauth:
+        SR.auth_set(username=user_username, password=user_password)
+    else:
+        auth["auth"] = SR.auth_gen(username=user_username, password=user_password)
+    return auth
+
+
 @pytest.fixture
 def clear_sar():
     """
