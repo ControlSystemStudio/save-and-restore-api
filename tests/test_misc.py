@@ -100,3 +100,11 @@ def test_login_01(username, password, roles, library, code):
                         await SR.login(username=username, password=password)
 
         asyncio.run(testing())
+
+
+
+def test_epics():
+    import epics
+    epics.caput("simple:A", 10)
+    v = epics.caget("simple:A")
+    assert v == 10

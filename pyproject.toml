@@ -41,6 +41,8 @@ dev = [
   "pytest-asyncio",
   "pre-commit",
   "ruff",
+  "caproto !=1.2.0",
+  "pyepics",
 ]
 docs = [
   "sphinx>=7.0",
