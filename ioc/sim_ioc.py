@@ -1,30 +1,28 @@
-from textwrap import dedent
+# Import the basic framework components.
+from softioc import asyncio_dispatcher, builder, softioc
 
-from caproto.server import PVGroup, ioc_arg_parser, pvproperty, run
+# Create an asyncio dispatcher, the event loop is now running
+dispatcher = asyncio_dispatcher.AsyncioDispatcher()
 
+# Set the record prefix
+builder.SetDeviceName("simulated")
 
-class SimpleIOC(PVGroup):
-    """
-    An IOC with three uncoupled read/writable PVs.
+# Create records
+AA = builder.aOut("A", initial_value=1.0)
+BB = builder.aOut("B", initial_value=1.0)
+CC = builder.aOut("C", initial_value=1.0)
+DD = builder.aOut("D", initial_value=1.0)
+EE = builder.aOut("E", initial_value=1.0)
+FF = builder.aOut("F", initial_value=1.0)
+GG = builder.aOut("G", initial_value=1.0)
+HH = builder.aOut("H", initial_value=1.0)
+II = builder.aOut("I", initial_value=1.0)
+JJ = builder.aOut("J", initial_value=1.0)
 
-    Scalar PVs
-    ----------
-    A, B, C, D, E, F, G, H, I, J (float)
-    """
+# Get the IOC started
+builder.LoadDatabase()
+softioc.iocInit(dispatcher)
 
-    A = pvproperty(value=1.0, doc="Value A")
-    B = pvproperty(value=1.0, doc="Value B")
-    C = pvproperty(value=1.0, doc="Value C")
-    D = pvproperty(value=1.0, doc="Value D")
-    E = pvproperty(value=1.0, doc="Value E")
-    F = pvproperty(value=1.0, doc="Value F")
-    G = pvproperty(value=1.0, doc="Value G")
-    H = pvproperty(value=1.0, doc="Value H")
-    I = pvproperty(value=1.0, doc="Value I")  # noqa:E741
-    J = pvproperty(value=1.0, doc="Value J")
-
-
-if __name__ == "__main__":
-    ioc_options, run_options = ioc_arg_parser(default_prefix="simulated:", desc=dedent(SimpleIOC.__doc__))
-    ioc = SimpleIOC(**ioc_options)
-    run(ioc.pvdb, **run_options)
+# Finally leave the IOC running with an interactive shell.
+# softioc.interactive_ioc(globals())
+softioc.non_interactive_ioc()
