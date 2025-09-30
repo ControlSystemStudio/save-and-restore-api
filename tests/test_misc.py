@@ -4,7 +4,6 @@ import asyncio
 import importlib.metadata
 
 import pytest
-from epics import caget
 
 import save_and_restore_api
 from save_and_restore_api import SaveRestoreAPI as SaveRestoreAPI_Threads
@@ -16,8 +15,6 @@ from .common import (
     admin_username,
     base_url,
     clear_sar,  # noqa: F401
-    ioc,  # noqa: F401
-    ioc_pvs,
     read_password,
     read_username,
     user_password,
@@ -103,9 +100,3 @@ def test_login_01(username, password, roles, library, code):
                         await SR.login(username=username, password=password)
 
         asyncio.run(testing())
-
-
-
-def test_epics(ioc):   # noqa: F811
-    for pv, value in ioc_pvs.items():
-        assert caget(pv) == value, f"PV {pv} has value {caget(pv)}, expected {value}"

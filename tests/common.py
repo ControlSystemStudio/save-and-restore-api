@@ -133,8 +133,9 @@ def ioc():
 
     def _reset_ioc():
         for pv, val in ioc_pvs.items():
-            caget(pv)
-            caput(pv, val)
+            v = caget(pv)
+            if v != val:
+                caput(pv, val)
 
     _reset_ioc()
     yield

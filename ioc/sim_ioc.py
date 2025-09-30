@@ -9,12 +9,7 @@ class SimpleIOC(PVGroup):
 
     Scalar PVs
     ----------
-    A (int)
-    B (float)
-
-    Array PVs
-    ---------
-    C (array of int)
+    A, B, C, D, E, F, G, H, I, J (float)
     """
 
     A = pvproperty(value=1.0, doc="Value A")
