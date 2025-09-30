@@ -1,4 +1,5 @@
 import pytest
+from epics import caget, caput
 
 from save_and_restore_api import SaveRestoreAPI
 
@@ -110,6 +111,20 @@ def clear_sar():
     _clear()
 
 
+ioc_pvs = {
+    "simulated:A": 1.0,
+    "simulated:B": 2.0,
+    "simulated:C": 3.0,
+    "simulated:D": 4.0,
+    "simulated:E": 5.0,
+    "simulated:F": 6.0,
+    "simulated:G": 7.0,
+    "simulated:H": 8.0,
+    "simulated:I": 9.0,
+    "simulated:J": 10.0,
+}
+
+
 @pytest.fixture
 def ioc():
     """
@@ -117,18 +132,9 @@ def ioc():
     """
 
     def _reset_ioc():
-        from epics import caput
-
-        caput("simulated:A", 1.0)
-        caput("simulated:B", 2.0)
-        caput("simulated:C", 3.0)
-        caput("simulated:D", 4.0)
-        caput("simulated:E", 5.0)
-        caput("simulated:F", 6.0)
-        caput("simulated:G", 7.0)
-        caput("simulated:H", 8.0)
-        caput("simulated:I", 9.0)
-        caput("simulated:J", 10.0)
+        for pv, val in ioc_pvs.items():
+            caget(pv)
+            caput(pv, val)
 
     _reset_ioc()
     yield
