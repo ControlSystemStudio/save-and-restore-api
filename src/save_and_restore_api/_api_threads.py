@@ -152,7 +152,7 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         )
         return self.send_request(method, url, params=params, auth=auth)
 
-    def config_update(self, *, configurationNode, configurationData=None, auth=None):
+    def config_update(self, *, configurationNode, configurationData, auth=None):
         """
         Updates an existing configuration node. Parameters ``configurationNode`` and ``configurationData``
         should be loaded using ``node_get()`` and ``config_get()`` respectively. Both parameters must
@@ -204,8 +204,9 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
     def take_snapshot_get(self, uniqueNodeId):
         """
-        Reads and returns PV values based on configuration specified by ``uniqueNodeId``.
-        The API does not create any nodes in the database.
+        Reads and returns a list of PV values based on configuration specified by
+        ``uniqueNodeId``. The API does not create any nodes in the database.
+        The returned list format matches the format of ``snapshotData["snapshotItems"]``.
 
         API: GET /take-snapshot/{uniqueNodeId}
         """
@@ -224,3 +225,47 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
             uniqueNodeId=uniqueNodeId, name=name, comment=comment
         )
         return self.send_request(method, url, url_params=url_params, auth=auth)
+
+    # =============================================================================================
+    #                         SNAPSHOT-CONTROLLER API METHODS
+    # =============================================================================================
+
+    def snapshot_get(self, uniqueId):
+        """
+        Returns snapshot data (``snapshotData``) for the snapshot specified by ``uniqueId``.
+
+        API: GET /snapshot/{uniqueId}
+        """
+        method, url = self._prepare_snapshot_get(uniqueId=uniqueId)
+        return self.send_request(method, url)
+
+    def snapshot_add(self, parentNodeId, *, snapshotNode, snapshotData, auth=None):
+        """
+        Upload data for the new snapshot and save it to the database. The new node is created
+        under the existing configuration node specified by ``parentNodeId``.
+
+        API: PUT /snapshot?parentNodeId={parentNodeId}
+        """
+        method, url, params = self._prepare_snapshot_add(
+            parentNodeId=parentNodeId, snapshotNode=snapshotNode, snapshotData=snapshotData
+        )
+        return self.send_request(method, url, params=params, auth=auth)
+
+    def snapshot_update(self, *, snapshotNode, snapshotData, auth=None):
+        """
+        Upload and update data for an existing snapshot. Both ``snapshotNode`` and ``snapshotData``
+        must have valid ``uniqueId`` fields pointing to an existing node.
+
+        API: POST /snapshot
+        """
+        method, url, params = self._prepare_snapshot_update(snapshotNode=snapshotNode, snapshotData=snapshotData)
+        return self.send_request(method, url, params=params, auth=auth)
+
+    def snapshots_get(self):
+        """
+        Returns a list of all existing snapshots (list of ``snapshotNode`` objects).
+
+        API: GET /snapshots
+        """
+        method, url = self._prepare_snapshots_get()
+        return self.send_request(method, url)

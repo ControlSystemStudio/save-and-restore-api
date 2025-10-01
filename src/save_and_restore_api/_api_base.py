@@ -219,7 +219,6 @@ class _SaveRestoreAPI_Base:
 
     def _prepare_config_update(self, *, configurationNode, configurationData):
         method, url = "POST", "/config"
-        configurationData = configurationData or {}
         params = {"configurationNode": configurationNode, "configurationData": configurationData}
         return method, url, params
 
@@ -250,9 +249,31 @@ class _SaveRestoreAPI_Base:
         return method, url
 
     def _prepare_take_snapshot_save(self, *, uniqueNodeId, name, comment):
-        method, url = "PUT", "/take-snapshot"
+        method, url = "PUT", f"/take-snapshot/{uniqueNodeId}"
         url_params = {"name": name, "comment": comment}
         return method, url, url_params
+
+    # =============================================================================================
+    #                         SNAPSHOT-CONTROLLER API METHODS
+    # =============================================================================================
+
+    def _prepare_snapshot_get(self, *, uniqueId):
+        method, url = "GET", f"/snapshot/{uniqueId}"
+        return method, url
+
+    def _prepare_snapshot_add(self, *, parentNodeId, snapshotNode, snapshotData):
+        method, url = "PUT", f"/snapshot?parentNodeId={parentNodeId}"
+        params = {"snapshotNode": snapshotNode, "snapshotData": snapshotData}
+        return method, url, params
+
+    def _prepare_snapshot_update(self, *, snapshotNode, snapshotData):
+        method, url = "POST", "/snapshot"
+        params = {"snapshotNode": snapshotNode, "snapshotData": snapshotData}
+        return method, url, params
+
+    def _prepare_snapshots_get(self):
+        method, url = "GET", "/snapshots"
+        return method, url
 
     # =============================================================================================
 

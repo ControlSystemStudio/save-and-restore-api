@@ -94,12 +94,10 @@ def clear_sar():
                 uids = [root_folder_uid]
                 while n_uid < len(uids):
                     uid = uids[n_uid]
-                    res_1 = SR.node_get(uid)
-                    if res_1["nodeType"] == "FOLDER":
-                        res_2 = SR.node_get_children(uid)
-                        ch_uids = [_["uniqueId"] for _ in res_2]
-                        if ch_uids:
-                            uids.extend(ch_uids)
+                    children = SR.node_get_children(uid)
+                    ch_uids = [_["uniqueId"] for _ in children]
+                    if ch_uids:
+                        uids.extend(ch_uids)
                     n_uid += 1
 
                 # Delete all nodes starting with children, including the root folder

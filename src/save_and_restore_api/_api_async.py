@@ -101,7 +101,7 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         )
         return await self.send_request(method, url, params=params, auth=auth)
 
-    async def config_update(self, *, configurationNode, configurationData=None, auth=None):
+    async def config_update(self, *, configurationNode, configurationData, auth=None):
         # Reusing docstrings from the threaded version
         method, url, params = self._prepare_config_update(
             configurationNode=configurationNode, configurationData=configurationData
@@ -131,17 +131,57 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
     #                         TAKE-SNAPSHOT-CONTROLLER API METHODS
     # =============================================================================================
 
-    def take_snapshot_get(self, uniqueNodeId):
+    async def take_snapshot_get(self, uniqueNodeId):
         # Reusing docstrings from the threaded version
         method, url = self._prepare_take_snapshot_get(uniqueNodeId=uniqueNodeId)
-        return self.send_request(method, url)
+        return await self.send_request(method, url)
 
-    def take_snapshot_save(self, uniqueNodeId, *, name=None, comment=None, auth=None):
+    async def take_snapshot_save(self, uniqueNodeId, *, name=None, comment=None, auth=None):
         # Reusing docstrings from the threaded version
         method, url, url_params = self._prepare_take_snapshot_save(
             uniqueNodeId=uniqueNodeId, name=name, comment=comment
         )
-        return self.send_request(method, url, url_params=url_params, auth=auth)
+        return await self.send_request(method, url, url_params=url_params, auth=auth)
+
+    # =============================================================================================
+    #                         SNAPSHOT-CONTROLLER API METHODS
+    # =============================================================================================
+
+    async def snapshot_get(self, uniqueId):
+        # Reusing docstrings from the threaded version
+        method, url = self._prepare_snapshot_get(uniqueId=uniqueId)
+        return await self.send_request(method, url)
+
+    async def snapshot_add(self, parentNodeId, *, snapshotNode, snapshotData, auth=None):
+        """
+        Upload data for the new snapshot and save it to the database. The new node is created
+        under the existing configuration node specified by ``parentNodeId``.
+
+        API: PUT /snapshot?parentNodeId={parentNodeId}
+        """
+        method, url, params = self._prepare_snapshot_add(
+            parentNodeId=parentNodeId, snapshotNode=snapshotNode, snapshotData=snapshotData
+        )
+        return await self.send_request(method, url, params=params, auth=auth)
+
+    async def snapshot_update(self, *, snapshotNode, snapshotData, auth=None):
+        """
+        Upload and update data for an existing snapshot. Both ``snapshotNode`` and ``snapshotData``
+        must have valid ``uniqueId`` fields pointing to an existing node.
+
+        API: POST /snapshot
+        """
+        method, url, params = self._prepare_snapshot_update(snapshotNode=snapshotNode, snapshotData=snapshotData)
+        return await self.send_request(method, url, params=params, auth=auth)
+
+    async def snapshots_get(self):
+        """
+        Returns a list of all existing snapshots (list of ``snapshotNode`` objects).
+
+        API: GET /snapshots
+        """
+        method, url = self._prepare_snapshots_get()
+        return await self.send_request(method, url)
 
 
 SaveRestoreAPI.node_get.__doc__ = _SaveRestoreAPI_Threads.node_get.__doc__
@@ -159,3 +199,7 @@ SaveRestoreAPI.tags_add.__doc__ = _SaveRestoreAPI_Threads.tags_add.__doc__
 SaveRestoreAPI.tags_delete.__doc__ = _SaveRestoreAPI_Threads.tags_delete.__doc__
 SaveRestoreAPI.take_snapshot_get.__doc__ = _SaveRestoreAPI_Threads.take_snapshot_get.__doc__
 SaveRestoreAPI.take_snapshot_save.__doc__ = _SaveRestoreAPI_Threads.take_snapshot_save.__doc__
+SaveRestoreAPI.snapshot_get.__doc__ = _SaveRestoreAPI_Threads.snapshot_get.__doc__
+SaveRestoreAPI.snapshot_add.__doc__ = _SaveRestoreAPI_Threads.snapshot_add.__doc__
+SaveRestoreAPI.snapshot_update.__doc__ = _SaveRestoreAPI_Threads.snapshot_update.__doc__
+SaveRestoreAPI.snapshots_get.__doc__ = _SaveRestoreAPI_Threads.snapshots_get.__doc__
