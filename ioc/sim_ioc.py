@@ -1,4 +1,5 @@
-# Import the basic framework components.
+import argparse
+
 from softioc import asyncio_dispatcher, builder, softioc
 
 # Create an asyncio dispatcher, the event loop is now running
@@ -24,6 +25,21 @@ JJ = builder.aOut("J", initial_value=10.0)
 builder.LoadDatabase()
 softioc.iocInit(dispatcher)
 
-# Finally leave the IOC running with an interactive shell.
-# softioc.interactive_ioc(globals())
-softioc.non_interactive_ioc()
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Simulated IOC for testing save-and-restore service",
+    )
+
+    parser.add_argument(
+        "--interactive",
+        "-i",
+        dest="interactive",
+        action="store_true",
+        help="Start the IOC with interactive shell",
+    )
+
+    args = parser.parse_args()
+    if args.interactive:
+        softioc.interactive_ioc(globals())
+    else:
+        softioc.non_interactive_ioc()
