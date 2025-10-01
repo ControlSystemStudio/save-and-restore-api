@@ -60,10 +60,10 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
     async def node_add(self, parentNodeId, *, name, nodeType, auth=None, **kwargs):
         # Reusing docstrings from the threaded version
-        method, url, params = self._prepare_node_add(
+        method, url, url_params, params = self._prepare_node_add(
             parentNodeId=parentNodeId, name=name, nodeType=nodeType, **kwargs
         )
-        return await self.send_request(method, url, params=params, auth=auth)
+        return await self.send_request(method, url, url_params=url_params, params=params, auth=auth)
 
     async def node_delete(self, nodeId, *, auth=None):
         # Reusing docstrings from the threaded version
@@ -113,33 +113,35 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
     # =============================================================================================
 
     async def tags_get(self):
-        """
-        Returns all existing tags.
-
-        API: GET /tags
-        """
+        # Reusing docstrings from the threaded version
         method, url = self._prepare_tags_get()
         return await self.send_request(method, url)
 
     async def tags_add(self, *, uniqueNodeIds, tag, auth=None):
-        """
-        Adds ``tag`` to nodes specified by a list of UIDs ``uniqueNodeIds``. The ``tag``
-        dictionary must contain the ``name`` key and optionally ``comment`` key.
-
-        API: POST /tags
-        """
+        # Reusing docstrings from the threaded version
         method, url, params = self._prepare_tags_add(uniqueNodeIds=uniqueNodeIds, tag=tag)
         return await self.send_request(method, url, params=params, auth=auth)
 
     async def tags_delete(self, *, uniqueNodeIds, tag, auth=None):
-        """
-        Deletes ``tag`` to nodes specified by a list of UIDs ``uniqueNodeIds``. The ``tag``
-        dictionary must contain the ``name`` key and optionally ``comment`` key.
-
-        API: DELETE /tags
-        """
+        # Reusing docstrings from the threaded version
         method, url, params = self._prepare_tags_delete(uniqueNodeIds=uniqueNodeIds, tag=tag)
         return await self.send_request(method, url, params=params, auth=auth)
+
+    # =============================================================================================
+    #                         TAKE-SNAPSHOT-CONTROLLER API METHODS
+    # =============================================================================================
+
+    def take_snapshot_get(self, uniqueNodeId):
+        # Reusing docstrings from the threaded version
+        method, url = self._prepare_take_snapshot_get(uniqueNodeId=uniqueNodeId)
+        return self.send_request(method, url)
+
+    def take_snapshot_save(self, uniqueNodeId, *, name=None, comment=None, auth=None):
+        # Reusing docstrings from the threaded version
+        method, url, url_params = self._prepare_take_snapshot_save(
+            uniqueNodeId=uniqueNodeId, name=name, comment=comment
+        )
+        return self.send_request(method, url, url_params=url_params, auth=auth)
 
 
 SaveRestoreAPI.node_get.__doc__ = _SaveRestoreAPI_Threads.node_get.__doc__
@@ -155,3 +157,5 @@ SaveRestoreAPI.config_update.__doc__ = _SaveRestoreAPI_Threads.config_update.__d
 SaveRestoreAPI.tags_get.__doc__ = _SaveRestoreAPI_Threads.tags_get.__doc__
 SaveRestoreAPI.tags_add.__doc__ = _SaveRestoreAPI_Threads.tags_add.__doc__
 SaveRestoreAPI.tags_delete.__doc__ = _SaveRestoreAPI_Threads.tags_delete.__doc__
+SaveRestoreAPI.take_snapshot_get.__doc__ = _SaveRestoreAPI_Threads.take_snapshot_get.__doc__
+SaveRestoreAPI.take_snapshot_save.__doc__ = _SaveRestoreAPI_Threads.take_snapshot_save.__doc__

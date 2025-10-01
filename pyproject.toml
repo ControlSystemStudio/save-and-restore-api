@@ -41,7 +41,6 @@ dev = [
   "pytest-asyncio",
   "pre-commit",
   "ruff",
-  # "caproto !=1.2.0",
   "softioc",
   "pyepics",
 ]

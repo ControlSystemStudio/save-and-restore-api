@@ -181,10 +181,10 @@ class _SaveRestoreAPI_Base:
         node_types = ("FOLDER", "CONFIGURATION")
         if nodeType not in node_types:
             raise self.RequestParameterError(f"Invalid nodeType: {nodeType!r}. Supported types: {node_types}.")
-        method, url = "PUT", f"/node?parentNodeId={parentNodeId}"
+        method, url, url_params = "PUT", "/node", {"parentNodeId": parentNodeId}
         params = kwargs
         params.update({"name": name, "nodeType": nodeType})
-        return method, url, params
+        return method, url, url_params, params
 
     def _prepare_node_delete(self, *, nodeId):
         method, url = "DELETE", f"/node/{nodeId}"
@@ -240,6 +240,19 @@ class _SaveRestoreAPI_Base:
         method, url = "DELETE", "/tags"
         params = {"uniqueNodeIds": uniqueNodeIds, "tag": tag}
         return method, url, params
+
+    # =============================================================================================
+    #                         TAKE-SNAPSHOT-CONTROLLER API METHODS
+    # =============================================================================================
+
+    def _prepare_take_snapshot_get(self, *, uniqueNodeId):
+        method, url = "GET", f"/take-snapshot/{uniqueNodeId}"
+        return method, url
+
+    def _prepare_take_snapshot_save(self, *, uniqueNodeId, name, comment):
+        method, url = "PUT", "/take-snapshot"
+        url_params = {"name": name, "comment": comment}
+        return method, url, url_params
 
     # =============================================================================================
 

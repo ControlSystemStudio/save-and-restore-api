@@ -72,10 +72,10 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
         API: PUT /node?parentNodeId={parentNodeId}
         """
-        method, url, params = self._prepare_node_add(
+        method, url, url_params, params = self._prepare_node_add(
             parentNodeId=parentNodeId, name=name, nodeType=nodeType, **kwargs
         )
-        return self.send_request(method, url, params=params, auth=auth)
+        return self.send_request(method, url, url_params=url_params, params=params, auth=auth)
 
     def node_delete(self, nodeId, *, auth=None):
         """
@@ -137,7 +137,7 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         Minimum required fields:
 
         configurationNode = {"name": "test_config"}
-        configurationData = {"pvList": [{"name": "PV1"}, {"name": "PV2"}]}
+        configurationData = {"pvList": [{"pvName": "PV1"}, {"pvName": "PV2"}]}
 
         The fields ``uniqueId``, ``nodeType``, ``userName`` in ``configurationNode`` are ignored
         and overwritten by the server.
@@ -197,3 +197,30 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         """
         method, url, params = self._prepare_tags_delete(uniqueNodeIds=uniqueNodeIds, tag=tag)
         return self.send_request(method, url, params=params, auth=auth)
+
+    # =============================================================================================
+    #                         TAKE-SNAPSHOT-CONTROLLER API METHODS
+    # =============================================================================================
+
+    def take_snapshot_get(self, uniqueNodeId):
+        """
+        Reads and returns PV values based on configuration specified by ``uniqueNodeId``.
+        The API does not create any nodes in the database.
+
+        API: GET /take-snapshot/{uniqueNodeId}
+        """
+        method, url = self._prepare_take_snapshot_get(uniqueNodeId=uniqueNodeId)
+        return self.send_request(method, url)
+
+    def take_snapshot_save(self, uniqueNodeId, *, name=None, comment=None, auth=None):
+        """
+        Reads PV values based on configuration specified by ``uniqueNodeId`` and
+        saves the values in a new snapshot node. The parameter ``name`` specifies
+        the name of the snapshot node and ``comment`` specifies the node description.
+
+        API: PUT /take-snapshot/{uniqueNodeId}
+        """
+        method, url, url_params = self._prepare_take_snapshot_save(
+            uniqueNodeId=uniqueNodeId, name=name, comment=comment
+        )
+        return self.send_request(method, url, url_params=url_params, auth=auth)
