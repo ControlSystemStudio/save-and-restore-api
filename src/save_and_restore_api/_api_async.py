@@ -220,6 +220,17 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         method, url, params = self._prepare_restore_items(snapshotItems=snapshotItems)
         return await self.send_request(method, url, params=params, auth=auth)
 
+    # =============================================================================================
+    #                     COMPARISON-CONTROLLER API METHODS
+    # =============================================================================================
+
+    async def compare(self, nodeId, *, tolerance=None, compareMode=None, skipReadback=None):
+        # Reusing docstrings from the threaded version
+        method, url, url_params = self._prepare_compare(
+            nodeId=nodeId, tolerance=tolerance, compareMode=compareMode, skipReadback=skipReadback
+        )
+        return await self.send_request(method, url, url_params=url_params)
+
 
 SaveRestoreAPI.info_get.__doc__ = _SaveRestoreAPI_Threads.info_get.__doc__
 SaveRestoreAPI.version_get.__doc__ = _SaveRestoreAPI_Threads.version_get.__doc__
@@ -246,3 +257,4 @@ SaveRestoreAPI.snapshot_update.__doc__ = _SaveRestoreAPI_Threads.snapshot_update
 SaveRestoreAPI.snapshots_get.__doc__ = _SaveRestoreAPI_Threads.snapshots_get.__doc__
 SaveRestoreAPI.restore_node.__doc__ = _SaveRestoreAPI_Threads.restore_node.__doc__
 SaveRestoreAPI.restore_items.__doc__ = _SaveRestoreAPI_Threads.restore_items.__doc__
+SaveRestoreAPI.compare.__doc__ = _SaveRestoreAPI_Threads.compare.__doc__

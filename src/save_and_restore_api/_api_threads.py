@@ -358,3 +358,20 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         """
         method, url, params = self._prepare_restore_items(snapshotItems=snapshotItems)
         return self.send_request(method, url, params=params, auth=auth)
+
+    # =============================================================================================
+    #                     COMPARISON-CONTROLLER API METHODS
+    # =============================================================================================
+
+    def compare(self, nodeId, *, tolerance=None, compareMode=None, skipReadback=None):
+        """
+        Compare stored PV values with live values for the selected snapshot or composite snapshot.
+        The snapshot is selected by ``nodeId``. The API returns a list of results for each PV in
+        the snapshot.
+
+        API: GET /compare/{nodeId}
+        """
+        method, url, url_params = self._prepare_compare(
+            nodeId=nodeId, tolerance=tolerance, compareMode=compareMode, skipReadback=skipReadback
+        )
+        return self.send_request(method, url, url_params=url_params)

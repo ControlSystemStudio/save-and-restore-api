@@ -329,6 +329,23 @@ class _SaveRestoreAPI_Base:
         return method, url, params
 
     # =============================================================================================
+    #                     COMPARISON-CONTROLLER API METHODS
+    # =============================================================================================
+
+    def _prepare_compare(self, *, nodeId, tolerance, compareMode, skipReadback):
+        method, url = "GET", f"/compare/{nodeId}"
+        url_params = {}
+        if tolerance:
+            url_params["tolerance"] = tolerance
+        if compareMode:
+            url_params["compareMode"] = compareMode
+        if skipReadback is not None:
+            url_params["skipReadback"] = str(skipReadback).lower()
+        if not url_params:
+            url_params = None
+        return method, url, url_params
+
+    # =============================================================================================
 
     # def create_config(self, parent_node_uid, name, pv_list):
     #     config_dict = {
