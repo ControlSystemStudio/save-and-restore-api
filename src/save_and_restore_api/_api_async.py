@@ -196,6 +196,8 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         return await self.send_request(method, url, params=params, auth=auth)
 
 
+SaveRestoreAPI.info_get.__doc__ = _SaveRestoreAPI_Threads.info_get.__doc__
+SaveRestoreAPI.login.__doc__ = _SaveRestoreAPI_Threads.login.__doc__
 SaveRestoreAPI.node_get.__doc__ = _SaveRestoreAPI_Threads.node_get.__doc__
 SaveRestoreAPI.nodes_get.__doc__ = _SaveRestoreAPI_Threads.nodes_get.__doc__
 SaveRestoreAPI.node_add.__doc__ = _SaveRestoreAPI_Threads.node_add.__doc__

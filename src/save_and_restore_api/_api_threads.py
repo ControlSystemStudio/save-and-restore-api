@@ -44,6 +44,11 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
     # =============================================================================================
 
     def info_get(self):
+        """
+        Returns information about the Save and Restore service.
+
+        API: GET /
+        """
         method, url = self._prepare_info_get()
         return self.send_request(method, url)
 
@@ -52,6 +57,11 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
     # =============================================================================================
 
     def login(self, *, username=None, password=None):
+        """
+        Validate user credentials and return user information.
+
+        API: POST /login
+        """
         method, url, params = self._prepare_login(username=username, password=password)
         return self.send_request(method, url, params=params)
 
