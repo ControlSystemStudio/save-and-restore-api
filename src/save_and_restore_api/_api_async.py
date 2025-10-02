@@ -231,6 +231,24 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         )
         return await self.send_request(method, url, url_params=url_params)
 
+    # =============================================================================================
+    #                     STRUCTURE-CONTROLLER API METHODS
+    # =============================================================================================
+
+    async def structure_move(self, nodeIds, newParentNodeId, *, auth=None):
+        # Reusing docstrings from the threaded version
+        method, url, params, url_params = self._prepare_structure_move(
+            nodeIds=nodeIds, newParentNodeId=newParentNodeId
+        )
+        return await self.send_request(method, url, params=params, url_params=url_params, auth=auth)
+
+    async def structure_copy(self, nodeIds, newParentNodeId, *, auth=None):
+        # Reusing docstrings from the threaded version
+        method, url, params, url_params = self._prepare_structure_copy(
+            nodeIds=nodeIds, newParentNodeId=newParentNodeId
+        )
+        return await self.send_request(method, url, params=params, url_params=url_params, auth=auth)
+
 
 SaveRestoreAPI.info_get.__doc__ = _SaveRestoreAPI_Threads.info_get.__doc__
 SaveRestoreAPI.version_get.__doc__ = _SaveRestoreAPI_Threads.version_get.__doc__
@@ -258,3 +276,5 @@ SaveRestoreAPI.snapshots_get.__doc__ = _SaveRestoreAPI_Threads.snapshots_get.__d
 SaveRestoreAPI.restore_node.__doc__ = _SaveRestoreAPI_Threads.restore_node.__doc__
 SaveRestoreAPI.restore_items.__doc__ = _SaveRestoreAPI_Threads.restore_items.__doc__
 SaveRestoreAPI.compare.__doc__ = _SaveRestoreAPI_Threads.compare.__doc__
+SaveRestoreAPI.structure_move.__doc__ = _SaveRestoreAPI_Threads.structure_move.__doc__
+SaveRestoreAPI.structure_copy.__doc__ = _SaveRestoreAPI_Threads.structure_copy.__doc__

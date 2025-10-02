@@ -375,3 +375,31 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
             nodeId=nodeId, tolerance=tolerance, compareMode=compareMode, skipReadback=skipReadback
         )
         return self.send_request(method, url, url_params=url_params)
+
+    # =============================================================================================
+    #                     STRUCTURE-CONTROLLER API METHODS
+    # =============================================================================================
+
+    def structure_move(self, nodeIds, *, newParentNodeId, auth=None):
+        """
+        Move nodes specified by a list of UIDs ``nodeIds`` to a new parent node specified
+        by ``newParentNodeId``. The API requires 'admin' priviledges.
+
+        API: POST /structure/move
+        """
+        method, url, params, url_params = self._prepare_structure_move(
+            nodeIds=nodeIds, newParentNodeId=newParentNodeId
+        )
+        return self.send_request(method, url, params=params, url_params=url_params, auth=auth)
+
+    def structure_copy(self, nodeIds, *, newParentNodeId, auth=None):
+        """
+        Copy nodes specified by a list of UIDs ``nodeIds`` to a new parent node specified
+        by ``newParentNodeId``. The API requires 'admin' priviledges.
+
+        API: POST /structure/copy
+        """
+        method, url, params, url_params = self._prepare_structure_copy(
+            nodeIds=nodeIds, newParentNodeId=newParentNodeId
+        )
+        return self.send_request(method, url, params=params, url_params=url_params, auth=auth)

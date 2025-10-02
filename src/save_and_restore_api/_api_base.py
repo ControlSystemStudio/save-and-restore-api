@@ -346,6 +346,22 @@ class _SaveRestoreAPI_Base:
         return method, url, url_params
 
     # =============================================================================================
+    #                     STRUCTURE-CONTROLLER API METHODS
+    # =============================================================================================
+
+    def _prepare_structure_move(self, *, nodeIds, newParentNodeId):
+        method, url = "POST", "/move"
+        url_params = {"to": newParentNodeId}
+        params = nodeIds
+        return method, url, params, url_params
+
+    def _prepare_structure_copy(self, *, nodeIds, newParentNodeId):
+        method, url = "POST", "/copy"
+        url_params = {"to": newParentNodeId}
+        params = nodeIds
+        return method, url, params, url_params
+
+    # =============================================================================================
 
     # def create_config(self, parent_node_uid, name, pv_list):
     #     config_dict = {
