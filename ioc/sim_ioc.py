@@ -31,15 +31,14 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "--interactive",
-        "-i",
-        dest="interactive",
+        "--no-shell",
+        dest="no_shell",
         action="store_true",
-        help="Start the IOC with interactive shell",
+        help="Start the IOC without interactive shell (for running as a background process)",
     )
 
     args = parser.parse_args()
-    if args.interactive:
-        softioc.interactive_ioc(globals())
-    else:
+    if args.no_shell:
         softioc.non_interactive_ioc()
+    else:
+        softioc.interactive_ioc(globals())
