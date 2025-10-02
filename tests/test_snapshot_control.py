@@ -257,11 +257,13 @@ def test_take_snapshot_add_01(clear_sar, library, usesetauth):  # noqa: F811
             response = SR.node_get_children(config_uid)
             assert len(response) == 2
 
-            # Get all the snapshots in the database (now there are only two)
+            # Get all the snapshots in the database (we created only two)
+            #   We use only one directory node for the tests. There could be other
+            #   snapshots in the database and they should not affect the test.
             response = SR.snapshots_get()
-            assert len(response) == 2
+            assert len(response) >= 2
             uids = [_["uniqueId"] for _ in response]
-            assert set(uids) == {shot_uid_1, shot_uid_2}
+            assert {shot_uid_1, shot_uid_2}.issubset(set(uids))
 
     else:
         async def testing():
@@ -316,10 +318,12 @@ def test_take_snapshot_add_01(clear_sar, library, usesetauth):  # noqa: F811
                 response = await SR.node_get_children(config_uid)
                 assert len(response) == 2
 
-                # Get all the snapshots in the database (now there are only two)
+                # Get all the snapshots in the database (we created only two)
+                #   We use only one directory node for the tests. There could be other
+                #   snapshots in the database and they should not affect the test.
                 response = await SR.snapshots_get()
-                assert len(response) == 2
+                assert len(response) >= 2
                 uids = [_["uniqueId"] for _ in response]
-                assert set(uids) == {shot_uid_1, shot_uid_2}
+                assert {shot_uid_1, shot_uid_2}.issubset(set(uids))
 
         asyncio.run(testing())
