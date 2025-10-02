@@ -385,7 +385,7 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         Move nodes specified by a list of UIDs ``nodeIds`` to a new parent node specified
         by ``newParentNodeId``. The API requires 'admin' priviledges.
 
-        API: POST /structure/move
+        API: POST /move
         """
         method, url, params, url_params = self._prepare_structure_move(
             nodeIds=nodeIds, newParentNodeId=newParentNodeId
@@ -397,9 +397,29 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         Copy nodes specified by a list of UIDs ``nodeIds`` to a new parent node specified
         by ``newParentNodeId``. The API requires 'admin' priviledges.
 
-        API: POST /structure/copy
+        API: POST /copy
         """
         method, url, params, url_params = self._prepare_structure_copy(
             nodeIds=nodeIds, newParentNodeId=newParentNodeId
         )
         return self.send_request(method, url, params=params, url_params=url_params, auth=auth)
+
+    def structure_path_get(self, uniqueNodeId):
+        """
+        Get path for the node with specified uniqueNodeId.
+
+        API: GET /path/{uniqueNodeId}
+        """
+        method, url = self._prepare_structure_path_get(uniqueNodeId=uniqueNodeId)
+        return self.send_request(method, url)
+
+    def structure_path_nodes(self, path):
+        """
+        Get a list of nodes that match the specified path. The path can point to multiple
+        nodes as long as node type is different (e.g. a folder and a configuration may have
+        the same name).
+
+        API: GET /path
+        """
+        method, url, url_params = self._prepare_structure_path_nodes(path=path)
+        return self.send_request(method, url, url_params=url_params)

@@ -13,6 +13,7 @@ from .common import (
     base_url,
     clear_sar,  # noqa: F401
     create_root_folder,
+    root_folder_node_name,
 )
 
 # =============================================================================================
@@ -127,5 +128,74 @@ def test_structure_move_01(clear_sar, library, usesetauth, usemove):  # noqa: F8
                 assert len(response) == n_folder1
                 response = await SR.node_get_children(folder2_uid)
                 assert len(response) == n_folder2
+
+        asyncio.run(testing())
+
+
+
+# fmt: off
+@pytest.mark.parametrize("usesetauth", [True, False])
+@pytest.mark.parametrize("library", ["THREADS", "ASYNC"])
+# fmt: on
+def test_structure_path_01(clear_sar, library, usesetauth):  # noqa: F811
+    """
+    Basic tests for the 'path_get' and 'path_nodes' API.
+    """
+    root_folder_uid = create_root_folder()
+
+    if not _is_async(library):
+        with SaveRestoreAPI_Threads(base_url=base_url, timeout=10) as SR:
+            auth = _select_auth(SR=SR, usesetauth=usesetauth)
+
+            # Create two folders
+            folder1_name = "Folder1"
+            response = SR.node_add(root_folder_uid, name=folder1_name, nodeType="FOLDER", **auth)
+            folder1_uid = response["uniqueId"]
+
+            node_name = "Node Name"
+            response = SR.node_add(folder1_uid, name=node_name, nodeType="FOLDER", **auth)
+            folder2_uid = response["uniqueId"]
+
+            # Create two configurations in folder1
+            response = SR.config_create(
+                folder1_uid,
+                configurationNode={"name": node_name},
+                configurationData={"pvList": []},
+                **auth
+            )
+
+            folder1_path = SR.structure_path_get(folder2_uid)
+            assert folder1_path == "/" + root_folder_node_name + "/" + folder1_name + "/" + node_name
+
+            response = SR.structure_path_nodes(folder1_path)
+            assert len(response) == 2
+
+    else:
+        async def testing():
+            async with SaveRestoreAPI_Async(base_url=base_url, timeout=2) as SR:
+                auth = _select_auth(SR=SR, usesetauth=usesetauth)
+
+                # Create two folders
+                folder1_name = "Folder1"
+                response = await SR.node_add(root_folder_uid, name=folder1_name, nodeType="FOLDER", **auth)
+                folder1_uid = response["uniqueId"]
+
+                node_name = "Node Name"
+                response = await SR.node_add(folder1_uid, name=node_name, nodeType="FOLDER", **auth)
+                folder2_uid = response["uniqueId"]
+
+                # Create two configurations in folder1
+                response = await SR.config_create(
+                    folder1_uid,
+                    configurationNode={"name": node_name},
+                    configurationData={"pvList": []},
+                    **auth
+                )
+
+                folder1_path = await SR.structure_path_get(folder2_uid)
+                assert folder1_path == "/" + root_folder_node_name + "/" + folder1_name + "/" + node_name
+
+                response = await SR.structure_path_nodes(folder1_path)
+                assert len(response) == 2
 
         asyncio.run(testing())

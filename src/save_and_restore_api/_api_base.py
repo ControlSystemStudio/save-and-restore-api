@@ -361,6 +361,15 @@ class _SaveRestoreAPI_Base:
         params = nodeIds
         return method, url, params, url_params
 
+    def _prepare_structure_path_get(self, *, uniqueNodeId):
+        method, url = "GET", f"/path/{uniqueNodeId}"
+        return method, url
+
+    def _prepare_structure_path_nodes(self, *, path):
+        method, url = "GET", "/path"
+        url_params = {"path": path}
+        return method, url, url_params
+
     # =============================================================================================
 
     # def create_config(self, parent_node_uid, name, pv_list):
