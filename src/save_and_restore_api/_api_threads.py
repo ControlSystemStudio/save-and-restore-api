@@ -377,6 +377,37 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         return self.send_request(method, url, url_params=url_params)
 
     # =============================================================================================
+    #                     FILTER-CONTROLLER API METHODS
+    # =============================================================================================
+
+    def filter_add(self, filter, *, auth=None):
+        """
+        Add a filter to the list stored in the database.
+
+        API: PUT /filter
+        """
+        method, url, params = self._prepare_filter_add(filter=filter)
+        return self.send_request(method, url, params=params, auth=auth)
+
+    def filters_get(self):
+        """
+        Get the list of all the filters from the database.
+
+        API: GET /filters
+        """
+        method, url = self._prepare_filters_get()
+        return self.send_request(method, url)
+
+    def filter_delete(self, name, *, auth=None):
+        """
+        Delete filter with the given name from the database.
+
+        API: DELETE /filter/{name}
+        """
+        method, url = self._prepare_filter_delete(name=name)
+        return self.send_request(method, url, auth=auth)
+
+    # =============================================================================================
     #                     STRUCTURE-CONTROLLER API METHODS
     # =============================================================================================
 

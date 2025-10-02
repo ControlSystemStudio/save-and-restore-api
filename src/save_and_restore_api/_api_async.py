@@ -232,6 +232,25 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         return await self.send_request(method, url, url_params=url_params)
 
     # =============================================================================================
+    #                     FILTER-CONTROLLER API METHODS
+    # =============================================================================================
+
+    async def filter_add(self, filter, *, auth=None):
+        # Reusing docstrings from the threaded version
+        method, url, params = self._prepare_filter_add(filter=filter)
+        return await self.send_request(method, url, params=params, auth=auth)
+
+    async def filters_get(self):
+        # Reusing docstrings from the threaded version
+        method, url = self._prepare_filters_get()
+        return await self.send_request(method, url)
+
+    async def filter_delete(self, name, *, auth=None):
+        # Reusing docstrings from the threaded version
+        method, url = self._prepare_filter_delete(name=name)
+        return await self.send_request(method, url, auth=auth)
+
+    # =============================================================================================
     #                     STRUCTURE-CONTROLLER API METHODS
     # =============================================================================================
 

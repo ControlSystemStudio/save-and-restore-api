@@ -12,6 +12,7 @@ read_username, read_password = "johndoe", "1234"
 # Unit tests will create this folder and add nodes only inside this folder.
 # This folder will be deleted after each test to ensure clean state.
 root_folder_node_name = "unit-test-root-folder"
+filter_prefix = "UNITTESTFILTER"
 
 
 def _is_async(library):
@@ -103,6 +104,12 @@ def clear_sar():
                 # Delete all nodes starting with children, including the root folder
                 for uid in reversed(uids):
                     SR.nodes_delete([uid])
+
+            # Delete all filters
+            filters = SR.filters_get()
+            for f in filters:
+                if f.startswith("filter_prefix"):
+                    SR.filter_delete(f["name"])
 
     _clear()
     yield

@@ -1,6 +1,7 @@
 # import getpass
 import json
 from collections.abc import Mapping
+from urllib.parse import quote
 
 import httpx
 
@@ -344,6 +345,24 @@ class _SaveRestoreAPI_Base:
         if not url_params:
             url_params = None
         return method, url, url_params
+
+    # =============================================================================================
+    #                     FILTER-CONTROLLER API METHODS
+    # =============================================================================================
+
+    def _prepare_filter_add(self, *, filter):
+        method, url = "PUT", "/filter"
+        params = filter
+        return method, url, params
+
+    def _prepare_filters_get(self):
+        method, url = "GET", "/filters"
+        return method, url
+
+    def _prepare_filter_delete(self, *, name):
+        # URL may contain spaces and special characters
+        method, url = "DELETE", quote(f"/filter/{name}")
+        return method, url
 
     # =============================================================================================
     #                     STRUCTURE-CONTROLLER API METHODS
