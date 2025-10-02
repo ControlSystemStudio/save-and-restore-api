@@ -62,6 +62,24 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         return self.send_request(method, url)
 
     # =============================================================================================
+    #                         SEARCH-CONTROLLER API METHODS
+    # =============================================================================================
+
+    def search(self, allRequestParams):
+        """
+        Send search query to the database. Example search queries (``allRequestParams``):
+        search for nodes with name containing 'test config': ``{"name": "test config"}``,
+        search for nodes with the description containing 'backup pvs': ``{"description": "backup pvs"}``,
+
+        Returns a dictionary with the following keys: ``hitCount`` - the number of matching nodes,
+        ``nodes`` - a list of matching nodes (not including data).
+
+        API: GET /search
+        """
+        method, url, url_params = self._prepare_search(allRequestParams=allRequestParams)
+        return self.send_request(method, url, url_params=url_params)
+
+    # =============================================================================================
     #                         AUTHENTICATION-CONTROLLER API METHODS
     # =============================================================================================
 

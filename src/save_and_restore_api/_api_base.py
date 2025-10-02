@@ -177,6 +177,15 @@ class _SaveRestoreAPI_Base:
         return method, url
 
     # =============================================================================================
+    #                         SEARCH-CONTROLLER API METHODS
+    # =============================================================================================
+
+    def _prepare_search(self, *, allRequestParams):
+        method, url = "GET", "/search"
+        url_params = allRequestParams
+        return method, url, url_params
+
+    # =============================================================================================
     #                         AUTHENTICATION-CONTROLLER API METHODS
     # =============================================================================================
 

@@ -45,23 +45,30 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
     # =============================================================================================
 
     async def info_get(self):
+        # Reusing docstrings from the threaded version
         method, url = self._prepare_info_get()
         return await self.send_request(method, url)
 
     async def version_get(self):
-        """
-        Returns current version of Save and Restore service.
-
-        API: GET /verson
-        """
+        # Reusing docstrings from the threaded version
         method, url = self._prepare_version_get()
         return await self.send_request(method, url)
+
+    # =============================================================================================
+    #                         SEARCH-CONTROLLER API METHODS
+    # =============================================================================================
+
+    async def search(self, allRequestParams):
+        # Reusing docstrings from the threaded version
+        method, url, url_params = self._prepare_search(allRequestParams=allRequestParams)
+        return await self.send_request(method, url, url_params=url_params)
 
     # =============================================================================================
     #                         AUTHENTICATION-CONTROLLER API METHODS
     # =============================================================================================
 
     async def login(self, *, username=None, password=None):
+        # Reusing docstrings from the threaded version
         method, url, params = self._prepare_login(username=username, password=password)
         return await self.send_request(method, url, params=params)
 
@@ -206,7 +213,9 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
 
 SaveRestoreAPI.info_get.__doc__ = _SaveRestoreAPI_Threads.info_get.__doc__
+SaveRestoreAPI.version_get.__doc__ = _SaveRestoreAPI_Threads.version_get.__doc__
 SaveRestoreAPI.login.__doc__ = _SaveRestoreAPI_Threads.login.__doc__
+SaveRestoreAPI.search.__doc__ = _SaveRestoreAPI_Threads.search.__doc__
 SaveRestoreAPI.node_get.__doc__ = _SaveRestoreAPI_Threads.node_get.__doc__
 SaveRestoreAPI.nodes_get.__doc__ = _SaveRestoreAPI_Threads.nodes_get.__doc__
 SaveRestoreAPI.node_add.__doc__ = _SaveRestoreAPI_Threads.node_add.__doc__

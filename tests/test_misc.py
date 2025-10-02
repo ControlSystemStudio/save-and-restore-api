@@ -11,10 +11,12 @@ from save_and_restore_api.aio import SaveRestoreAPI as SaveRestoreAPI_Async
 
 from .common import (
     _is_async,
+    _select_auth,
     admin_password,
     admin_username,
     base_url,
     clear_sar,  # noqa: F401
+    create_root_folder,
     read_password,
     read_username,
     user_password,
@@ -115,6 +117,77 @@ def test_version_get_01(library):
                 isinstance(info, str)
                 assert "service-save-and-restore" in info
                 assert "version" in info
+
+        asyncio.run(testing())
+
+
+# =============================================================================================
+#                         TESTS FOR SEARCH-CONTROLLER API METHODS
+# =============================================================================================
+
+# fmt: off
+@pytest.mark.parametrize("library", ["THREADS", "ASYNC"])
+# fmt: on
+def test_search_01(clear_sar, library):  # noqa: F811
+    """
+    Tests for the 'search' API.
+    """
+    root_folder_uid = create_root_folder()
+
+    if not _is_async(library):
+        with SaveRestoreAPI_Threads(base_url=base_url, timeout=2) as SR:
+            _select_auth(SR=SR, usesetauth=True)
+
+            configurationNode = {"name": "Test Config", "description": "Created for testing"}
+            configurationData = {"pvList": []}
+
+            response = SR.config_create(
+                root_folder_uid,
+                configurationNode=configurationNode,
+                configurationData=configurationData,
+            )
+            config_uid = response["configurationNode"]["uniqueId"]
+
+            response = SR.search({"name": "Test Config"})
+            assert response["hitCount"] == 1
+            assert response["nodes"][0]["name"] == "Test Config"
+            assert response["nodes"][0]["uniqueId"] == config_uid
+
+            response = SR.search({"description": "for testing"})
+            assert response["hitCount"] == 1
+            assert response["nodes"][0]["name"] == "Test Config"
+            assert response["nodes"][0]["uniqueId"] == config_uid
+
+            response = SR.search({"name": "No such config"})
+            assert response["hitCount"] == 0
+
+    else:
+        async def testing():
+            async with SaveRestoreAPI_Async(base_url=base_url, timeout=2) as SR:
+                _select_auth(SR=SR, usesetauth=True)
+
+                configurationNode = {"name": "Test Config", "description": "Created for testing"}
+                configurationData = {"pvList": []}
+
+                response = await SR.config_create(
+                    root_folder_uid,
+                    configurationNode=configurationNode,
+                    configurationData=configurationData,
+                )
+                config_uid = response["configurationNode"]["uniqueId"]
+
+                response = await SR.search({"name": "Test Config"})
+                assert response["hitCount"] == 1
+                assert response["nodes"][0]["name"] == "Test Config"
+                assert response["nodes"][0]["uniqueId"] == config_uid
+
+                response = await SR.search({"description": "for testing"})
+                assert response["hitCount"] == 1
+                assert response["nodes"][0]["name"] == "Test Config"
+                assert response["nodes"][0]["uniqueId"] == config_uid
+
+                response = await SR.search({"name": "No such config"})
+                assert response["hitCount"] == 0
 
         asyncio.run(testing())
 
