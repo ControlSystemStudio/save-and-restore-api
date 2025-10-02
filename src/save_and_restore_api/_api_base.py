@@ -159,6 +159,18 @@ class _SaveRestoreAPI_Base:
                 kwargs.update({"auth": auth})
         return kwargs
 
+    # =============================================================================================
+    #                         INFO-CONTROLLER API METHODS
+    # =============================================================================================
+
+    def _prepare_info_get(self):
+        method, url = "GET", "/"
+        return method, url
+
+    # =============================================================================================
+    #                         AUTHENTICATION-CONTROLLER API METHODS
+    # =============================================================================================
+
     def _prepare_login(self, *, username=None, password=None):
         method, url = "POST", "/login"
         params = {"username": username, "password": password}

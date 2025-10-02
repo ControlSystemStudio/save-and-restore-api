@@ -41,6 +41,14 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         return response
 
     # =============================================================================================
+    #                         INFO-CONTROLLER API METHODS
+    # =============================================================================================
+
+    async def info_get(self):
+        method, url = self._prepare_info_get()
+        return await self.send_request(method, url)
+
+    # =============================================================================================
     #                         AUTHENTICATION-CONTROLLER API METHODS
     # =============================================================================================
 
