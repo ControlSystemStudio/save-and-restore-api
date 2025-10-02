@@ -51,8 +51,9 @@ def test_tags_01(clear_sar, library, usesetauth):  # noqa: F811
             tag_1 = {"name": "tag_1"}
             tag_2 = {"name": "tag_2", "comment": "This is tag 2"}
 
+            # Baseline number of tags (database may contain tags that are not created by the test)
             response = SR.tags_get()
-            assert len(response) == 0
+            n_tags_baseline = len(response)
 
             response = SR.tags_add(uniqueNodeIds=[config_1_uid], tag=tag_1, **auth)
             assert len(response) == 1
@@ -69,7 +70,7 @@ def test_tags_01(clear_sar, library, usesetauth):  # noqa: F811
             assert [_["name"] for _ in response[2]["tags"]] == ["tag_2"]
 
             response = SR.tags_get()  # Returns the list of ALL tags
-            assert len(response) == 4
+            assert len(response) == 4 + n_tags_baseline
 
             response = SR.tags_delete(uniqueNodeIds=[config_1_uid, folder_uid], tag={"name": "tag_2"}, **auth)
             assert len(response) == 2
@@ -79,7 +80,7 @@ def test_tags_01(clear_sar, library, usesetauth):  # noqa: F811
             assert [_["name"] for _ in response[1]["tags"]] == []
 
             response = SR.tags_get()
-            assert len(response) == 2
+            assert len(response) == 2 + n_tags_baseline
 
     else:
         async def testing():
@@ -103,7 +104,7 @@ def test_tags_01(clear_sar, library, usesetauth):  # noqa: F811
                 tag_2 = {"name": "tag_2", "comment": "This is tag 2"}
 
                 response = await SR.tags_get()
-                assert len(response) == 0
+                n_tags_baseline = len(response)
 
                 response = await SR.tags_add(uniqueNodeIds=[config_1_uid], tag=tag_1, **auth)
                 assert len(response) == 1
@@ -122,7 +123,7 @@ def test_tags_01(clear_sar, library, usesetauth):  # noqa: F811
                 assert [_["name"] for _ in response[2]["tags"]] == ["tag_2"]
 
                 response = await SR.tags_get()  # Returns the list of ALL tags
-                assert len(response) == 4
+                assert len(response) == 4 + n_tags_baseline
 
                 response = await SR.tags_delete(
                     uniqueNodeIds=[config_1_uid, folder_uid], tag={"name": "tag_2"}, **auth
@@ -134,7 +135,7 @@ def test_tags_01(clear_sar, library, usesetauth):  # noqa: F811
                 assert [_["name"] for _ in response[1]["tags"]] == []
 
                 response = await SR.tags_get()
-                assert len(response) == 2
+                assert len(response) == 2 + n_tags_baseline
 
 
         asyncio.run(testing())
