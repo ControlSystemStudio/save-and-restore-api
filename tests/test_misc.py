@@ -191,6 +191,32 @@ def test_search_01(clear_sar, library):  # noqa: F811
 
         asyncio.run(testing())
 
+# =============================================================================================
+#                         HELP-RESOURCE API METHODS
+# =============================================================================================
+
+# fmt: off
+@pytest.mark.parametrize("library", ["THREADS", "ASYNC"])
+# fmt: on
+def test_help_01(library):
+    """
+    Tests for the 'help' API.
+    """
+    if not _is_async(library):
+        with SaveRestoreAPI_Threads(base_url=base_url, timeout=2) as SR:
+            response = SR.help(what="SearchHelp")
+            isinstance(response, str)
+            assert "Save-and-restore Search Help Reference" in response
+
+    else:
+        async def testing():
+            async with SaveRestoreAPI_Async(base_url=base_url, timeout=2) as SR:
+                response = await SR.help(what="SearchHelp")
+                isinstance(response, str)
+                assert "Save-and-restore Search Help Reference" in response
+
+        asyncio.run(testing())
+
 
 # =============================================================================================
 #                         TESTS FOR AUTHENTICATION-CONTROLLER API METHODS

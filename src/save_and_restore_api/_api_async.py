@@ -64,6 +64,15 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         return await self.send_request(method, url, url_params=url_params)
 
     # =============================================================================================
+    #                         HELP-RESOURCE API METHODS
+    # =============================================================================================
+
+    async def help(self, what, *, lang=None):
+        # Reusing docstrings from the threaded version
+        method, url, url_params = self._prepare_help(what=what, lang=lang)
+        return await self.send_request(method, url, url_params=url_params)
+
+    # =============================================================================================
     #                         AUTHENTICATION-CONTROLLER API METHODS
     # =============================================================================================
 

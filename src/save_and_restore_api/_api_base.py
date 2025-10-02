@@ -186,6 +186,15 @@ class _SaveRestoreAPI_Base:
         return method, url, url_params
 
     # =============================================================================================
+    #                         HELP-RESOURCE API METHODS
+    # =============================================================================================
+
+    def _prepare_help(self, *, what, lang):
+        method, url = "GET", f"/help/{what}"
+        url_params = {"lang": lang} if lang else None
+        return method, url, url_params
+
+    # =============================================================================================
     #                         AUTHENTICATION-CONTROLLER API METHODS
     # =============================================================================================
 

@@ -80,6 +80,19 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         return self.send_request(method, url, url_params=url_params)
 
     # =============================================================================================
+    #                         HELP-RESOURCE API METHODS
+    # =============================================================================================
+
+    def help(self, what, *, lang=None):
+        """
+        Download help pages, e.g. /help/SearchHelp
+
+        API: GET /help/{what}?lang={lang}
+        """
+        method, url, url_params = self._prepare_help(what=what, lang=lang)
+        return self.send_request(method, url, url_params=url_params)
+
+    # =============================================================================================
     #                         AUTHENTICATION-CONTROLLER API METHODS
     # =============================================================================================
 
