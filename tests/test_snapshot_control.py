@@ -334,12 +334,13 @@ def test_snapshot_add_01(clear_sar, library, usesetauth):  # noqa: F811
 # =============================================================================================
 
 # fmt: off
+@pytest.mark.parametrize("restorenode", [True, False])
 @pytest.mark.parametrize("usesetauth", [True, False])
 @pytest.mark.parametrize("library", ["THREADS", "ASYNC"])
 # fmt: on
-def test_restore_node_01(clear_sar, library, usesetauth):  # noqa: F811
+def test_restore_node_01(clear_sar, library, usesetauth, restorenode):  # noqa: F811
     """
-    Basic tests for the 'restore_node' API.
+    Basic tests for the 'restore_node' and 'restore_items' API.
     """
     root_folder_uid = create_root_folder()
     name, comment = "test snapshot", "This is a test snapshot"
@@ -369,9 +370,13 @@ def test_restore_node_01(clear_sar, library, usesetauth):  # noqa: F811
             for pv in ioc_pvs.keys():
                 caput(pv, "0")
 
-            response = SR.restore_node(shot_uid, **auth)
+            if restorenode:
+                response = SR.restore_node(shot_uid, **auth)
+            else:
+                response = SR.restore_items(snapshotItems=snapshotData["snapshotItems"], **auth)
+
             print(f"response: {response}")
-            assert len(response) == 0  # Empty if restoration succeeded
+            assert len(response) == 0
 
             for pv, v in ioc_pvs.items():
                 assert int(caget(pv, "0")) == int(v), f"PV {pv} has value {caget(pv)}, expected {v}"
@@ -402,7 +407,11 @@ def test_restore_node_01(clear_sar, library, usesetauth):  # noqa: F811
                 for pv in ioc_pvs.keys():
                     caput(pv, "0")
 
-                response = await SR.restore_node(shot_uid, **auth)
+                if restorenode:
+                    response = await SR.restore_node(shot_uid, **auth)
+                else:
+                    response = await SR.restore_items(snapshotItems=snapshotData["snapshotItems"], **auth)
+
                 print(f"response: {response}")
                 assert len(response) == 0  # Empty if restoration succeeded
 

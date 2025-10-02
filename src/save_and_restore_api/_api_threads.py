@@ -282,6 +282,8 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         """
         Restore PVs based on the data from an existing snapshot node specified by nodeId.
 
+        Returns a list of snapshotItems that were NOT restored. Ideally the list should be empty.
+
         API: POST /restore/node
         """
         method, url, url_params = self._prepare_restore_node(nodeId=nodeId)
@@ -291,6 +293,8 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         """
         Restore PVs based on the list of snapshot items passed with the request. The list
         format matches the format of ``snapshotData["snapshotItems"]``
+
+        Returns a list of snapshotItems that were NOT restored. Ideally the list should be empty.
 
         API: POST /restore/items
         """
