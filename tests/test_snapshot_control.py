@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 
 import pytest
-from epics import caget
+from epics import caget, caput
 
 from save_and_restore_api import SaveRestoreAPI as SaveRestoreAPI_Threads
 from save_and_restore_api.aio import SaveRestoreAPI as SaveRestoreAPI_Async
@@ -197,7 +197,7 @@ def test_take_snapshot_save_01(clear_sar, library, usesetauth):  # noqa: F811
 @pytest.mark.parametrize("usesetauth", [True, False])
 @pytest.mark.parametrize("library", ["THREADS", "ASYNC"])
 # fmt: on
-def test_take_snapshot_add_01(clear_sar, library, usesetauth):  # noqa: F811
+def test_snapshot_add_01(clear_sar, library, usesetauth):  # noqa: F811
     """
     Basic tests for the 'snapshot_add', 'snapshot_update' and 'snapshots_get' API.
     """
@@ -325,5 +325,88 @@ def test_take_snapshot_add_01(clear_sar, library, usesetauth):  # noqa: F811
                 assert len(response) >= 2
                 uids = [_["uniqueId"] for _ in response]
                 assert {shot_uid_1, shot_uid_2}.issubset(set(uids))
+
+        asyncio.run(testing())
+
+
+# =============================================================================================
+#                     TESTS FOR SNAPSHOT-RESTORE-CONTROLLER API METHODS
+# =============================================================================================
+
+# fmt: off
+@pytest.mark.parametrize("usesetauth", [True, False])
+@pytest.mark.parametrize("library", ["THREADS", "ASYNC"])
+# fmt: on
+def test_restore_node_01(clear_sar, library, usesetauth):  # noqa: F811
+    """
+    Basic tests for the 'restore_node' API.
+    """
+    root_folder_uid = create_root_folder()
+    name, comment = "test snapshot", "This is a test snapshot"
+
+    if not _is_async(library):
+        with SaveRestoreAPI_Threads(base_url=base_url, timeout=10) as SR:
+            auth = _select_auth(SR=SR, usesetauth=usesetauth)
+
+            configurationNode = {"name": "Test Config"}
+            configurationData = {"pvList": [{"pvName": _} for _ in ioc_pvs.keys()]}
+
+            response = SR.config_create(
+                root_folder_uid,
+                configurationNode=configurationNode,
+                configurationData=configurationData,
+                **auth
+            )
+            config_uid = response["configurationNode"]["uniqueId"]
+
+            # Take a single snapshot (snapshot #1)
+            response = SR.take_snapshot_save(config_uid, name=name, comment=comment, **auth)
+            shot_uid = response["snapshotNode"]["uniqueId"]
+            snapshotData = response["snapshotData"]
+            print(f"snapshotData: {snapshotData}")
+
+            # Change all the PVs to zero
+            for pv in ioc_pvs.keys():
+                caput(pv, "0")
+
+            response = SR.restore_node(shot_uid, **auth)
+            print(f"response: {response}")
+            assert len(response) == 0  # Empty if restoration succeeded
+
+            for pv, v in ioc_pvs.items():
+                assert int(caget(pv, "0")) == int(v), f"PV {pv} has value {caget(pv)}, expected {v}"
+
+    else:
+        async def testing():
+            async with SaveRestoreAPI_Async(base_url=base_url, timeout=2) as SR:
+                auth = _select_auth(SR=SR, usesetauth=usesetauth)
+
+                configurationNode = {"name": "Test Config"}
+                configurationData = {"pvList": [{"pvName": _} for _ in ioc_pvs.keys()]}
+
+                response = await SR.config_create(
+                    root_folder_uid,
+                    configurationNode=configurationNode,
+                    configurationData=configurationData,
+                    **auth
+                )
+                config_uid = response["configurationNode"]["uniqueId"]
+
+                # Take a single snapshot (snapshot #1)
+                response = await SR.take_snapshot_save(config_uid, name=name, comment=comment, **auth)
+                shot_uid = response["snapshotNode"]["uniqueId"]
+                snapshotData = response["snapshotData"]
+                print(f"snapshotData: {snapshotData}")
+
+                # Change all the PVs to zero
+                for pv in ioc_pvs.keys():
+                    caput(pv, "0")
+
+                response = await SR.restore_node(shot_uid, **auth)
+                print(f"response: {response}")
+                assert len(response) == 0  # Empty if restoration succeeded
+
+                for pv, v in ioc_pvs.items():
+                    assert int(caget(pv, "0")) == int(v), f"PV {pv} has value {caget(pv)}, expected {v}"
 
         asyncio.run(testing())
