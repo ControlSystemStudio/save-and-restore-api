@@ -100,7 +100,12 @@ class _SaveRestoreAPI_Base:
 
     def _process_response(self, *, client_response):
         client_response.raise_for_status()
-        response = client_response.json() if client_response.content else ""
+        response = ""
+        if client_response.content:
+            try:
+                response = client_response.json()
+            except json.JSONDecodeError:
+                response = client_response.text
         return response
 
     def _process_comm_exception(self, *, method, params, client_response):
@@ -165,6 +170,10 @@ class _SaveRestoreAPI_Base:
 
     def _prepare_info_get(self):
         method, url = "GET", "/"
+        return method, url
+
+    def _prepare_version_get(self):
+        method, url = "GET", "/version"
         return method, url
 
     # =============================================================================================

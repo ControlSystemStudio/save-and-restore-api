@@ -92,6 +92,33 @@ def test_info_get_01(library):
 
         asyncio.run(testing())
 
+# fmt: off
+@pytest.mark.parametrize("library", ["THREADS", "ASYNC"])
+# fmt: on
+def test_version_get_01(library):
+    """
+    Tests for the 'version_get' API.
+    """
+    if not _is_async(library):
+        with SaveRestoreAPI_Threads(base_url=base_url, timeout=2) as SR:
+
+            info = SR.version_get()
+            isinstance(info, str)
+            assert "service-save-and-restore" in info
+            assert "version" in info
+
+    else:
+        async def testing():
+            async with SaveRestoreAPI_Async(base_url=base_url, timeout=2) as SR:
+
+                info = await SR.version_get()
+                isinstance(info, str)
+                assert "service-save-and-restore" in info
+                assert "version" in info
+
+        asyncio.run(testing())
+
+
 # =============================================================================================
 #                         TESTS FOR AUTHENTICATION-CONTROLLER API METHODS
 # =============================================================================================

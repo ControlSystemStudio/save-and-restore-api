@@ -48,6 +48,15 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         method, url = self._prepare_info_get()
         return await self.send_request(method, url)
 
+    async def version_get(self):
+        """
+        Returns current version of Save and Restore service.
+
+        API: GET /verson
+        """
+        method, url = self._prepare_version_get()
+        return await self.send_request(method, url)
+
     # =============================================================================================
     #                         AUTHENTICATION-CONTROLLER API METHODS
     # =============================================================================================
