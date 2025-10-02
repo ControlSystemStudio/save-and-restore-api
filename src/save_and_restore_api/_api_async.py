@@ -40,6 +40,10 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
         return response
 
+    # =============================================================================================
+    #                         AUTHENTICATION-CONTROLLER API METHODS
+    # =============================================================================================
+
     async def login(self, *, username=None, password=None):
         method, url, params = self._prepare_login(username=username, password=password)
         return await self.send_request(method, url, params=params)
@@ -153,35 +157,35 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         return await self.send_request(method, url)
 
     async def snapshot_add(self, parentNodeId, *, snapshotNode, snapshotData, auth=None):
-        """
-        Upload data for the new snapshot and save it to the database. The new node is created
-        under the existing configuration node specified by ``parentNodeId``.
-
-        API: PUT /snapshot?parentNodeId={parentNodeId}
-        """
+        # Reusing docstrings from the threaded version
         method, url, params = self._prepare_snapshot_add(
             parentNodeId=parentNodeId, snapshotNode=snapshotNode, snapshotData=snapshotData
         )
         return await self.send_request(method, url, params=params, auth=auth)
 
     async def snapshot_update(self, *, snapshotNode, snapshotData, auth=None):
-        """
-        Upload and update data for an existing snapshot. Both ``snapshotNode`` and ``snapshotData``
-        must have valid ``uniqueId`` fields pointing to an existing node.
-
-        API: POST /snapshot
-        """
+        # Reusing docstrings from the threaded version
         method, url, params = self._prepare_snapshot_update(snapshotNode=snapshotNode, snapshotData=snapshotData)
         return await self.send_request(method, url, params=params, auth=auth)
 
     async def snapshots_get(self):
-        """
-        Returns a list of all existing snapshots (list of ``snapshotNode`` objects).
-
-        API: GET /snapshots
-        """
+        # Reusing docstrings from the threaded version
         method, url = self._prepare_snapshots_get()
         return await self.send_request(method, url)
+
+    # =============================================================================================
+    #                     SNAPSHOT-RESTORE-CONTROLLER API METHODS
+    # =============================================================================================
+
+    async def restore_node(self, nodeId, *, auth=None):
+        # Reusing docstrings from the threaded version
+        method, url, url_params = self._prepare_restore_node(nodeId=nodeId)
+        return await self.send_request(method, url, url_params=url_params, auth=auth)
+
+    async def restore_items(self, *, snapshotItems, auth=None):
+        # Reusing docstrings from the threaded version
+        method, url, params = self._prepare_restore_items(snapshotItems=snapshotItems)
+        return await self.send_request(method, url, params=params, auth=auth)
 
 
 SaveRestoreAPI.node_get.__doc__ = _SaveRestoreAPI_Threads.node_get.__doc__
@@ -203,3 +207,5 @@ SaveRestoreAPI.snapshot_get.__doc__ = _SaveRestoreAPI_Threads.snapshot_get.__doc
 SaveRestoreAPI.snapshot_add.__doc__ = _SaveRestoreAPI_Threads.snapshot_add.__doc__
 SaveRestoreAPI.snapshot_update.__doc__ = _SaveRestoreAPI_Threads.snapshot_update.__doc__
 SaveRestoreAPI.snapshots_get.__doc__ = _SaveRestoreAPI_Threads.snapshots_get.__doc__
+SaveRestoreAPI.restore_node.__doc__ = _SaveRestoreAPI_Threads.restore_node.__doc__
+SaveRestoreAPI.restore_items.__doc__ = _SaveRestoreAPI_Threads.restore_items.__doc__

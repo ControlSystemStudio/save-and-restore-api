@@ -276,6 +276,20 @@ class _SaveRestoreAPI_Base:
         return method, url
 
     # =============================================================================================
+    #                     SNAPSHOT-RESTORE-CONTROLLER API METHODS
+    # =============================================================================================
+
+    def _prepare_restore_node(self, *, nodeId):
+        method, url = "POST", "/restore/node"
+        url_params = {"nodeId": nodeId}
+        return method, url, url_params
+
+    def _prepare_restore_items(self, *, snapshotItems):
+        method, url = "POST", "/restore/items"
+        params = snapshotItems
+        return method, url, params
+
+    # =============================================================================================
 
     # def create_config(self, parent_node_uid, name, pv_list):
     #     config_dict = {

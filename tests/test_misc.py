@@ -65,6 +65,11 @@ def test_version_01():
 #         asyncio.run(testing())
 
 
+# =============================================================================================
+#                         TESTS FOR AUTHENTICATION-CONTROLLER API METHODS
+# =============================================================================================
+
+
 # fmt: off
 @pytest.mark.parametrize("library", ["THREADS", "ASYNC"])
 @pytest.mark.parametrize("username, password, roles, code", [

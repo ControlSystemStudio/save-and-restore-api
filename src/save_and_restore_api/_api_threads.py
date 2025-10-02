@@ -39,6 +39,10 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
         return response
 
+    # =============================================================================================
+    #                         AUTHENTICATION-CONTROLLER API METHODS
+    # =============================================================================================
+
     def login(self, *, username=None, password=None):
         method, url, params = self._prepare_login(username=username, password=password)
         return self.send_request(method, url, params=params)
@@ -269,3 +273,26 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         """
         method, url = self._prepare_snapshots_get()
         return self.send_request(method, url)
+
+    # =============================================================================================
+    #                     SNAPSHOT-RESTORE-CONTROLLER API METHODS
+    # =============================================================================================
+
+    def restore_node(self, nodeId, *, auth=None):
+        """
+        Restore PVs based on the data from an existing snapshot node specified by nodeId.
+
+        API: POST /restore/node
+        """
+        method, url, url_params = self._prepare_restore_node(nodeId=nodeId)
+        return self.send_request(method, url, url_params=url_params, auth=auth)
+
+    def restore_items(self, *, snapshotItems, auth=None):
+        """
+        Restore PVs based on the list of snapshot items passed with the request. The list
+        format matches the format of ``snapshotData["snapshotItems"]``
+
+        API: POST /restore/items
+        """
+        method, url, params = self._prepare_restore_items(snapshotItems=snapshotItems)
+        return self.send_request(method, url, params=params, auth=auth)
