@@ -419,3 +419,175 @@ def test_restore_node_01(clear_sar, library, usesetauth, restorenode):  # noqa: 
                     assert int(caget(pv, "0")) == int(v), f"PV {pv} has value {caget(pv)}, expected {v}"
 
         asyncio.run(testing())
+
+
+# =============================================================================================
+#                         TESTS FOR COMPOSITE-SNAPSHOT-CONTROLLER API METHODS
+# =============================================================================================
+
+# fmt: off
+@pytest.mark.parametrize("usesetauth", [True, False])
+@pytest.mark.parametrize("library", ["THREADS", "ASYNC"])
+# fmt: on
+def test_composite_snapshot_add_01(clear_sar, ioc, library, usesetauth):  # noqa: F811
+    """
+    Test functionality of 'composite_snapshot_add', 'composite_snapshot_update'
+    'composite_snapshot_consistency_check', 'composite_snapshot_get', 'composite_snapshot_get_nodes'
+    and 'composite_snapshot_get_items' API.
+    """
+    root_folder_uid = create_root_folder()
+
+    if not _is_async(library):
+        with SaveRestoreAPI_Threads(base_url=base_url, timeout=10) as SR:
+            auth = _select_auth(SR=SR, usesetauth=usesetauth)
+
+            configurationNode1 = {"name": "Test Config1"}
+            configurationData1 = {"pvList": [{"pvName": _} for _ in ioc_pvs.keys()][:5]}
+            configurationNode2 = {"name": "Test Config2"}
+            configurationData2 = {"pvList": [{"pvName": _} for _ in ioc_pvs.keys()][5:]}
+
+            # Create two configurations
+            response = SR.config_create(
+                root_folder_uid,
+                configurationNode=configurationNode1,
+                configurationData=configurationData1,
+                **auth
+            )
+            config_uid1 = response["configurationNode"]["uniqueId"]
+
+            response = SR.config_create(
+                root_folder_uid,
+                configurationNode=configurationNode2,
+                configurationData=configurationData2,
+                **auth
+            )
+            config_uid2 = response["configurationNode"]["uniqueId"]
+
+            response = SR.take_snapshot_save(config_uid1, name="Snapshot1", **auth)
+            snapshot_uid1 = response["snapshotData"]["uniqueId"]
+            response = SR.take_snapshot_save(config_uid2, name="Snapshot2", **auth)
+            snapshot_uid2 = response["snapshotData"]["uniqueId"]
+
+            response = SR.composite_snapshot_add(root_folder_uid,
+                compositeSnapshotNode={
+                    "name": "Composite Snapshot",
+                    "nodeType": "COMPOSITE_SNAPSHOT",
+                    "description": "Test composite snapshot",
+                },
+                compositeSnapshotData={"referencedSnapshotNodes": [snapshot_uid1, snapshot_uid2]},
+                **auth,
+            )
+            composite_snapshot_uid = response["compositeSnapshotNode"]["uniqueId"]
+
+            response = SR.composite_snapshot_get(composite_snapshot_uid)
+            assert response["uniqueId"] == composite_snapshot_uid
+            assert len(response["referencedSnapshotNodes"]) == 2
+
+            response = SR.composite_snapshot_get_nodes(composite_snapshot_uid)
+            assert len(response) == 2
+            assert {response[0]["name"], response[1]["name"]} == {"Snapshot1", "Snapshot2"}
+
+            response = SR.composite_snapshot_get_items(composite_snapshot_uid)
+            assert len(response) == 10
+            assert {_["configPv"]["pvName"] for _ in response} == set(ioc_pvs.keys())
+
+            # Consistency check succeeds for the existing snapshot
+            response = SR.composite_snapshot_consistency_check([composite_snapshot_uid])
+            assert len(response) == 0
+
+            # Attempt to add snapshot_uid1 the second time. This should result in 5 conflicting PVs
+            response = SR.composite_snapshot_consistency_check([composite_snapshot_uid, snapshot_uid1])
+            assert len(response) == 5
+
+            # Update the composite snapshot
+            compositeSnapshotNode = SR.node_get(composite_snapshot_uid)
+            compositeSnapshotData = SR.composite_snapshot_get(composite_snapshot_uid)
+            compositeSnapshotData["referencedSnapshotNodes"] = [snapshot_uid1]
+            response = SR.composite_snapshot_update(
+                compositeSnapshotNode=compositeSnapshotNode,
+                compositeSnapshotData=compositeSnapshotData,
+                **auth
+            )
+            assert response["compositeSnapshotNode"]["uniqueId"] == composite_snapshot_uid
+
+            response = SR.composite_snapshot_get_items(composite_snapshot_uid)
+            assert len(response) == 5
+
+    else:
+        async def testing():
+            async with SaveRestoreAPI_Async(base_url=base_url, timeout=2) as SR:
+                auth = _select_auth(SR=SR, usesetauth=usesetauth)
+
+                configurationNode1 = {"name": "Test Config1"}
+                configurationData1 = {"pvList": [{"pvName": _} for _ in ioc_pvs.keys()][:5]}
+                configurationNode2 = {"name": "Test Config2"}
+                configurationData2 = {"pvList": [{"pvName": _} for _ in ioc_pvs.keys()][5:]}
+
+                # Create two configurations
+                response = await SR.config_create(
+                    root_folder_uid,
+                    configurationNode=configurationNode1,
+                    configurationData=configurationData1,
+                    **auth
+                )
+                config_uid1 = response["configurationNode"]["uniqueId"]
+
+                response = await SR.config_create(
+                    root_folder_uid,
+                    configurationNode=configurationNode2,
+                    configurationData=configurationData2,
+                    **auth
+                )
+                config_uid2 = response["configurationNode"]["uniqueId"]
+
+                response = await SR.take_snapshot_save(config_uid1, name="Snapshot1", **auth)
+                snapshot_uid1 = response["snapshotData"]["uniqueId"]
+                response = await SR.take_snapshot_save(config_uid2, name="Snapshot2", **auth)
+                snapshot_uid2 = response["snapshotData"]["uniqueId"]
+
+                response = await SR.composite_snapshot_add(root_folder_uid,
+                    compositeSnapshotNode={
+                        "name": "Composite Snapshot",
+                        "nodeType": "COMPOSITE_SNAPSHOT",
+                        "description": "Test composite snapshot",
+                    },
+                    compositeSnapshotData={"referencedSnapshotNodes": [snapshot_uid1, snapshot_uid2]},
+                    **auth,
+                )
+                composite_snapshot_uid = response["compositeSnapshotNode"]["uniqueId"]
+
+                response = await SR.composite_snapshot_get(composite_snapshot_uid)
+                assert response["uniqueId"] == composite_snapshot_uid
+                assert len(response["referencedSnapshotNodes"]) == 2
+
+                response = await SR.composite_snapshot_get_nodes(composite_snapshot_uid)
+                assert len(response) == 2
+                assert {response[0]["name"], response[1]["name"]} == {"Snapshot1", "Snapshot2"}
+
+                response = await SR.composite_snapshot_get_items(composite_snapshot_uid)
+                assert len(response) == 10
+                assert {_["configPv"]["pvName"] for _ in response} == set(ioc_pvs.keys())
+
+                # Consistency check succeeds for the existing snapshot
+                response = await SR.composite_snapshot_consistency_check([composite_snapshot_uid])
+                assert len(response) == 0
+
+                # Attempt to add snapshot_uid1 the second time. This should result in 5 conflicting PVs
+                response = await SR.composite_snapshot_consistency_check([composite_snapshot_uid, snapshot_uid1])
+                assert len(response) == 5
+
+                # Update the composite snapshot
+                compositeSnapshotNode = await SR.node_get(composite_snapshot_uid)
+                compositeSnapshotData = await SR.composite_snapshot_get(composite_snapshot_uid)
+                compositeSnapshotData["referencedSnapshotNodes"] = [snapshot_uid1]
+                response = await SR.composite_snapshot_update(
+                    compositeSnapshotNode=compositeSnapshotNode,
+                    compositeSnapshotData=compositeSnapshotData,
+                    **auth
+                )
+                assert response["compositeSnapshotNode"]["uniqueId"] == composite_snapshot_uid
+
+                response = await SR.composite_snapshot_get_items(composite_snapshot_uid)
+                assert len(response) == 5
+
+        asyncio.run(testing())

@@ -102,7 +102,17 @@ def clear_sar():
                     n_uid += 1
 
                 # Delete all nodes starting with children, including the root folder
+                # First delete all composite snapshots
+                uids_remaining = []
                 for uid in reversed(uids):
+                    resp = SR.node_get(uid)
+                    if resp["nodeType"] == "COMPOSITE_SNAPSHOT":
+                        SR.nodes_delete([uid])
+                    else:
+                        uids_remaining.append(uid)
+                # Then delete all other nodes
+                uids = uids_remaining
+                for uid in uids:
                     SR.nodes_delete([uid])
 
             # Delete all filters

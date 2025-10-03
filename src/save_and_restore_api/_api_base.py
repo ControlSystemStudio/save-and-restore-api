@@ -302,9 +302,10 @@ class _SaveRestoreAPI_Base:
         return method, url
 
     def _prepare_snapshot_add(self, *, parentNodeId, snapshotNode, snapshotData):
-        method, url = "PUT", f"/snapshot?parentNodeId={parentNodeId}"
+        method, url = "PUT", "/snapshot"
         params = {"snapshotNode": snapshotNode, "snapshotData": snapshotData}
-        return method, url, params
+        url_params = {"parentNodeId": parentNodeId}
+        return method, url, url_params, params
 
     def _prepare_snapshot_update(self, *, snapshotNode, snapshotData):
         method, url = "POST", "/snapshot"
@@ -314,6 +315,38 @@ class _SaveRestoreAPI_Base:
     def _prepare_snapshots_get(self):
         method, url = "GET", "/snapshots"
         return method, url
+
+    # =============================================================================================
+    #                         COMPOSITE-SNAPSHOT-CONTROLLER API METHODS
+    # =============================================================================================
+
+    def _prepare_composite_snapshot_get(self, *, uniqueId):
+        method, url = "GET", f"/composite-snapshot/{uniqueId}"
+        return method, url
+
+    def _prepare_composite_snapshot_get_nodes(self, *, uniqueId):
+        method, url = "GET", f"/composite-snapshot/{uniqueId}/nodes"
+        return method, url
+
+    def _prepare_composite_snapshot_get_items(self, *, uniqueId):
+        method, url = "GET", f"/composite-snapshot/{uniqueId}/items"
+        return method, url
+
+    def _prepare_composite_snapshot_add(self, *, parentNodeId, compositeSnapshotNode, compositeSnapshotData):
+        method, url = "PUT", "/composite-snapshot"
+        params = {"compositeSnapshotNode": compositeSnapshotNode, "compositeSnapshotData": compositeSnapshotData}
+        url_params = {"parentNodeId": parentNodeId}
+        return method, url, url_params, params
+
+    def _prepare_composite_snapshot_update(self, *, compositeSnapshotNode, compositeSnapshotData):
+        method, url = "POST", "/composite-snapshot"
+        params = {"compositeSnapshotNode": compositeSnapshotNode, "compositeSnapshotData": compositeSnapshotData}
+        return method, url, params
+
+    def _prepare_composite_snapshot_consistency_check(self, *, uniqueNodeIds):
+        method, url = "POST", "/composite-snapshot-consistency-check"
+        params = uniqueNodeIds
+        return method, url, params
 
     # =============================================================================================
     #                     SNAPSHOT-RESTORE-CONTROLLER API METHODS

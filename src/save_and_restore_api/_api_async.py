@@ -191,10 +191,10 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
     async def snapshot_add(self, parentNodeId, *, snapshotNode, snapshotData, auth=None):
         # Reusing docstrings from the threaded version
-        method, url, params = self._prepare_snapshot_add(
+        method, url, url_params, params = self._prepare_snapshot_add(
             parentNodeId=parentNodeId, snapshotNode=snapshotNode, snapshotData=snapshotData
         )
-        return await self.send_request(method, url, params=params, auth=auth)
+        return await self.send_request(method, url, params=params, url_params=url_params, auth=auth)
 
     async def snapshot_update(self, *, snapshotNode, snapshotData, auth=None):
         # Reusing docstrings from the threaded version
@@ -205,6 +205,49 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         # Reusing docstrings from the threaded version
         method, url = self._prepare_snapshots_get()
         return await self.send_request(method, url)
+
+    # =============================================================================================
+    #                         COMPOSITE-SNAPSHOT-CONTROLLER API METHODS
+    # =============================================================================================
+
+    async def composite_snapshot_get(self, uniqueId):
+        # Reusing docstrings from the threaded version
+        method, url = self._prepare_composite_snapshot_get(uniqueId=uniqueId)
+        return await self.send_request(method, url)
+
+    async def composite_snapshot_get_nodes(self, uniqueId):
+        # Reusing docstrings from the threaded version
+        method, url = self._prepare_composite_snapshot_get_nodes(uniqueId=uniqueId)
+        return await self.send_request(method, url)
+
+    async def composite_snapshot_get_items(self, uniqueId):
+        # Reusing docstrings from the threaded version
+        method, url = self._prepare_composite_snapshot_get_items(uniqueId=uniqueId)
+        return await self.send_request(method, url)
+
+    async def composite_snapshot_add(
+        self, parentNodeId, *, compositeSnapshotNode, compositeSnapshotData, auth=None
+    ):
+        # Reusing docstrings from the threaded version
+        method, url, url_params, params = self._prepare_composite_snapshot_add(
+            parentNodeId=parentNodeId,
+            compositeSnapshotNode=compositeSnapshotNode,
+            compositeSnapshotData=compositeSnapshotData,
+        )
+        return await self.send_request(method, url, url_params=url_params, params=params, auth=auth)
+
+    async def composite_snapshot_update(self, *, compositeSnapshotNode, compositeSnapshotData, auth=None):
+        # Reusing docstrings from the threaded version
+        method, url, params = self._prepare_composite_snapshot_update(
+            compositeSnapshotNode=compositeSnapshotNode,
+            compositeSnapshotData=compositeSnapshotData,
+        )
+        return await self.send_request(method, url, params=params, auth=auth)
+
+    async def composite_snapshot_consistency_check(self, uniqueNodeIds, *, auth=None):
+        # Reusing docstrings from the threaded version
+        method, url, params = self._prepare_composite_snapshot_consistency_check(uniqueNodeIds=uniqueNodeIds)
+        return await self.send_request(method, url, params=params, auth=auth)
 
     # =============================================================================================
     #                     SNAPSHOT-RESTORE-CONTROLLER API METHODS
@@ -302,6 +345,16 @@ SaveRestoreAPI.snapshot_get.__doc__ = _SaveRestoreAPI_Threads.snapshot_get.__doc
 SaveRestoreAPI.snapshot_add.__doc__ = _SaveRestoreAPI_Threads.snapshot_add.__doc__
 SaveRestoreAPI.snapshot_update.__doc__ = _SaveRestoreAPI_Threads.snapshot_update.__doc__
 SaveRestoreAPI.snapshots_get.__doc__ = _SaveRestoreAPI_Threads.snapshots_get.__doc__
+
+SaveRestoreAPI.composite_snapshot_get.__doc__ = _SaveRestoreAPI_Threads.composite_snapshot_get.__doc__
+SaveRestoreAPI.composite_snapshot_get_nodes.__doc__ = _SaveRestoreAPI_Threads.composite_snapshot_get_nodes.__doc__
+SaveRestoreAPI.composite_snapshot_get_items.__doc__ = _SaveRestoreAPI_Threads.composite_snapshot_get_items.__doc__
+SaveRestoreAPI.composite_snapshot_add.__doc__ = _SaveRestoreAPI_Threads.composite_snapshot_add.__doc__
+SaveRestoreAPI.composite_snapshot_update.__doc__ = _SaveRestoreAPI_Threads.composite_snapshot_update.__doc__
+SaveRestoreAPI.composite_snapshot_consistency_check.__doc__ = (
+    _SaveRestoreAPI_Threads.composite_snapshot_consistency_check.__doc__
+)
+
 SaveRestoreAPI.restore_node.__doc__ = _SaveRestoreAPI_Threads.restore_node.__doc__
 SaveRestoreAPI.restore_items.__doc__ = _SaveRestoreAPI_Threads.restore_items.__doc__
 SaveRestoreAPI.compare.__doc__ = _SaveRestoreAPI_Threads.compare.__doc__

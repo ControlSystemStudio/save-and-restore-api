@@ -308,10 +308,10 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
         API: PUT /snapshot?parentNodeId={parentNodeId}
         """
-        method, url, params = self._prepare_snapshot_add(
+        method, url, url_params, params = self._prepare_snapshot_add(
             parentNodeId=parentNodeId, snapshotNode=snapshotNode, snapshotData=snapshotData
         )
-        return self.send_request(method, url, params=params, auth=auth)
+        return self.send_request(method, url, params=params, url_params=url_params, auth=auth)
 
     def snapshot_update(self, *, snapshotNode, snapshotData, auth=None):
         """
@@ -331,6 +331,77 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         """
         method, url = self._prepare_snapshots_get()
         return self.send_request(method, url)
+
+    # =============================================================================================
+    #                         COMPOSITE-SNAPSHOT-CONTROLLER API METHODS
+    # =============================================================================================
+
+    def composite_snapshot_get(self, uniqueId):
+        """
+        Returns composite snapshot data (``compositeSnapshotData``). The composite snapshot is
+        specified by ``uniqueId``. The data includes uniqueId and the list of referencedSnapshotNodes
+        (no PV information).
+
+        API: GET /composite-snapshot/{uniqueId}
+        """
+        method, url = self._prepare_composite_snapshot_get(uniqueId=uniqueId)
+        return self.send_request(method, url)
+
+    def composite_snapshot_get_nodes(self, uniqueId):
+        """
+        Returns a list of nodes referenced by the composite snapshot. The composite snapshot is
+        specified by ``uniqueId``.
+
+        API: GET /composite-snapshot/{uniqueId}/nodes
+        """
+        method, url = self._prepare_composite_snapshot_get_nodes(uniqueId=uniqueId)
+        return self.send_request(method, url)
+
+    def composite_snapshot_get_items(self, uniqueId):
+        """
+        Returns a list of restorable items referenced by the composite snapshot. The composite snapshot is
+        specified by ``uniqueId``.
+
+        API: GET /composite-snapshot/{uniqueId}/items
+        """
+        method, url = self._prepare_composite_snapshot_get_items(uniqueId=uniqueId)
+        return self.send_request(method, url)
+
+    def composite_snapshot_add(self, parentNodeId, *, compositeSnapshotNode, compositeSnapshotData, auth=None):
+        """
+        Create a new composite snapshot node. The new node is created under the existing configuration node
+        specified by ``parentNodeId``.
+
+        API: PUT /composite-snapshot?parentNodeId={parentNodeId}
+        """
+        method, url, url_params, params = self._prepare_composite_snapshot_add(
+            parentNodeId=parentNodeId,
+            compositeSnapshotNode=compositeSnapshotNode,
+            compositeSnapshotData=compositeSnapshotData,
+        )
+        return self.send_request(method, url, url_params=url_params, params=params, auth=auth)
+
+    def composite_snapshot_update(self, *, compositeSnapshotNode, compositeSnapshotData, auth=None):
+        """
+        Update the existing snapshot. Both ``compositeSnapshotNode`` and ``compositeSnapshotNode``
+        must have valid ``uniqueId`` fields pointing to an existing node.
+
+        API: POST /composite-snapshot
+        """
+        method, url, params = self._prepare_composite_snapshot_update(
+            compositeSnapshotNode=compositeSnapshotNode,
+            compositeSnapshotData=compositeSnapshotData,
+        )
+        return self.send_request(method, url, params=params, auth=auth)
+
+    def composite_snapshot_consistency_check(self, uniqueNodeIds, *, auth=None):
+        """
+        Check consistency of the composite snapshots.
+
+        API: POST /composite-snapshot-consistency-check
+        """
+        method, url, params = self._prepare_composite_snapshot_consistency_check(uniqueNodeIds=uniqueNodeIds)
+        return self.send_request(method, url, params=params, auth=auth)
 
     # =============================================================================================
     #                     SNAPSHOT-RESTORE-CONTROLLER API METHODS

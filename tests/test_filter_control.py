@@ -24,7 +24,7 @@ from .common import (
 @pytest.mark.parametrize("usesetauth", [True, False])
 @pytest.mark.parametrize("library", ["THREADS", "ASYNC"])
 # fmt: on
-def test_filter_add_01(clear_sar, ioc, library, usesetauth):  # noqa: F811
+def test_filter_add_01(clear_sar, library, usesetauth):  # noqa: F811
     """
     Basic tests for the 'filter_add', 'filters_get' and 'filter_delete' API.
     """
