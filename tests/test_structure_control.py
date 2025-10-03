@@ -44,14 +44,14 @@ def test_structure_move_01(clear_sar, library, usesetauth, usemove):  # noqa: F8
             folder2_uid = response["uniqueId"]
 
             # Create two configurations in folder1
-            response = SR.config_create(
+            response = SR.config_add(
                 folder1_uid,
                 configurationNode={"name": "Config1"},
                 configurationData={"pvList": []},
                 **auth
             )
             config1_uid = response["configurationNode"]["uniqueId"]
-            response = SR.config_create(
+            response = SR.config_add(
                 folder1_uid,
                 configurationNode={"name": "Config2"},
                 configurationData={"pvList": []},
@@ -91,14 +91,14 @@ def test_structure_move_01(clear_sar, library, usesetauth, usemove):  # noqa: F8
                 folder2_uid = response["uniqueId"]
 
                 # Create two configurations in folder1
-                response = await SR.config_create(
+                response = await SR.config_add(
                     folder1_uid,
                     configurationNode={"name": "Config1"},
                     configurationData={"pvList": []},
                     **auth
                 )
                 config1_uid = response["configurationNode"]["uniqueId"]
-                response = await SR.config_create(
+                response = await SR.config_add(
                     folder1_uid,
                     configurationNode={"name": "Config2"},
                     configurationData={"pvList": []},
@@ -157,7 +157,7 @@ def test_structure_path_01(clear_sar, library, usesetauth):  # noqa: F811
             folder2_uid = response["uniqueId"]
 
             # Create two configurations in folder1
-            response = SR.config_create(
+            response = SR.config_add(
                 folder1_uid,
                 configurationNode={"name": node_name},
                 configurationData={"pvList": []},
@@ -185,7 +185,7 @@ def test_structure_path_01(clear_sar, library, usesetauth):  # noqa: F811
                 folder2_uid = response["uniqueId"]
 
                 # Create two configurations in folder1
-                response = await SR.config_create(
+                response = await SR.config_add(
                     folder1_uid,
                     configurationNode={"name": node_name},
                     configurationData={"pvList": []},

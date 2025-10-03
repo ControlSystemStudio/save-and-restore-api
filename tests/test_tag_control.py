@@ -38,12 +38,12 @@ def test_tags_01(clear_sar, library, usesetauth):  # noqa: F811
             response = SR.node_add(root_folder_uid, name="folder", nodeType="FOLDER", **auth)
             folder_uid = response["uniqueId"]
 
-            response = SR.config_create(
+            response = SR.config_add(
                 folder_uid, configurationNode={"name": "config_1"}, configurationData={"pvList": []}, **auth
             )
             config_1_uid = response["configurationNode"]["uniqueId"]
 
-            response = SR.config_create(
+            response = SR.config_add(
                 folder_uid, configurationNode={"name": "config_2"}, configurationData={"pvList": []}, **auth
             )
             config_2_uid = response["configurationNode"]["uniqueId"]
@@ -90,12 +90,12 @@ def test_tags_01(clear_sar, library, usesetauth):  # noqa: F811
                 response = await SR.node_add(root_folder_uid, name="folder", nodeType="FOLDER", **auth)
                 folder_uid = response["uniqueId"]
 
-                response = await SR.config_create(
+                response = await SR.config_add(
                     folder_uid, configurationNode={"name": "config_1"}, configurationData={"pvList": []}, **auth
                 )
                 config_1_uid = response["configurationNode"]["uniqueId"]
 
-                response = await SR.config_create(
+                response = await SR.config_add(
                     folder_uid, configurationNode={"name": "config_2"}, configurationData={"pvList": []}, **auth
                 )
                 config_2_uid = response["configurationNode"]["uniqueId"]

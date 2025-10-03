@@ -141,7 +141,7 @@ def test_search_01(clear_sar, library):  # noqa: F811
             configurationNode = {"name": "Test Config", "description": "Created for testing"}
             configurationData = {"pvList": []}
 
-            response = SR.config_create(
+            response = SR.config_add(
                 root_folder_uid,
                 configurationNode=configurationNode,
                 configurationData=configurationData,
@@ -169,7 +169,7 @@ def test_search_01(clear_sar, library):  # noqa: F811
                 configurationNode = {"name": "Test Config", "description": "Created for testing"}
                 configurationData = {"pvList": []}
 
-                response = await SR.config_create(
+                response = await SR.config_add(
                     root_folder_uid,
                     configurationNode=configurationNode,
                     configurationData=configurationData,

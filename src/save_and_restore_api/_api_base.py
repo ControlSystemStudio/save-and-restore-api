@@ -251,7 +251,7 @@ class _SaveRestoreAPI_Base:
         method, url = "GET", f"/config/{uniqueNodeId}"
         return method, url
 
-    def _prepare_config_create(self, *, parentNodeId, configurationNode, configurationData):
+    def _prepare_config_add(self, *, parentNodeId, configurationNode, configurationData):
         method, url = "PUT", f"/config?parentNodeId={parentNodeId}"
         configurationData = configurationData or {}
         params = {"configurationNode": configurationNode, "configurationData": configurationData}

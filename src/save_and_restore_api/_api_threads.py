@@ -191,7 +191,7 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         method, url = self._prepare_config_get(uniqueNodeId=uniqueNodeId)
         return self.send_request(method, url)
 
-    def config_create(self, parentNodeId, *, configurationNode, configurationData, auth=None):
+    def config_add(self, parentNodeId, *, configurationNode, configurationData, auth=None):
         """
         Creates a new configuration node under the specified parent node. Parameters:
         ``configurationNode`` - the node metadata, ``configurationData`` - the configuration data.
@@ -209,7 +209,7 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
         API: PUT /config?parentNodeId={parentNodeId}
         """
-        method, url, params = self._prepare_config_create(
+        method, url, params = self._prepare_config_add(
             parentNodeId=parentNodeId, configurationNode=configurationNode, configurationData=configurationData
         )
         return self.send_request(method, url, params=params, auth=auth)

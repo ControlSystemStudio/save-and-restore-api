@@ -26,9 +26,9 @@ from .common import (
 @pytest.mark.parametrize("usesetauth", [True, False])
 @pytest.mark.parametrize("library", ["THREADS", "ASYNC"])
 # fmt: on
-def test_config_create_01(clear_sar, library, usesetauth):  # noqa: F811
+def test_config_add_01(clear_sar, library, usesetauth):  # noqa: F811
     """
-    Tests for the 'config_create' and 'config_get' API.
+    Tests for the 'config_add' and 'config_get' API.
     """
 
     root_folder_uid = create_root_folder()
@@ -71,7 +71,7 @@ def test_config_create_01(clear_sar, library, usesetauth):  # noqa: F811
             folder_uid = response["uniqueId"]
 
 
-            response = SR.config_create(
+            response = SR.config_add(
                 folder_uid, configurationNode=configurationNode, configurationData=configurationData, **auth
             )
             assert response["configurationNode"]["name"] == "Config"
@@ -99,7 +99,7 @@ def test_config_create_01(clear_sar, library, usesetauth):  # noqa: F811
                 response = await SR.node_add(root_folder_uid, name="Child Folder", nodeType="FOLDER", **auth)
                 folder_uid = response["uniqueId"]
 
-                response = await SR.config_create(
+                response = await SR.config_add(
                     folder_uid, configurationNode=configurationNode, configurationData=configurationData, **auth
                 )
                 assert response["configurationNode"]["name"] == "Config"
@@ -143,7 +143,7 @@ def test_config_update_01(clear_sar, library, usesetauth):  # noqa: F811
             response = SR.node_add(root_folder_uid, name="Child Folder", nodeType="FOLDER", **auth)
             folder_uid = response["uniqueId"]
 
-            response = SR.config_create(
+            response = SR.config_add(
                 folder_uid, configurationNode={"name": "Config"}, configurationData={"pvList": pv_list1}, **auth
             )
             configurationNode = response["configurationNode"]
@@ -189,7 +189,7 @@ def test_config_update_01(clear_sar, library, usesetauth):  # noqa: F811
                 response = await SR.node_add(root_folder_uid, name="Child Folder", nodeType="FOLDER", **auth)
                 folder_uid = response["uniqueId"]
 
-                response = await SR.config_create(
+                response = await SR.config_add(
                     folder_uid,
                     configurationNode={"name": "Config"},
                     configurationData={"pvList": pv_list1},

@@ -40,7 +40,7 @@ def test_compare_01(clear_sar, ioc, library, usesetauth):  # noqa: F811
             configurationNode = {"name": "Test Config"}
             configurationData = {"pvList": [{"pvName": _} for _ in ioc_pvs.keys()]}
 
-            response = SR.config_create(
+            response = SR.config_add(
                 root_folder_uid,
                 configurationNode=configurationNode,
                 configurationData=configurationData,
@@ -77,7 +77,7 @@ def test_compare_01(clear_sar, ioc, library, usesetauth):  # noqa: F811
                 configurationNode = {"name": "Test Config"}
                 configurationData = {"pvList": [{"pvName": _} for _ in ioc_pvs.keys()]}
 
-                response = await SR.config_create(
+                response = await SR.config_add(
                     root_folder_uid,
                     configurationNode=configurationNode,
                     configurationData=configurationData,

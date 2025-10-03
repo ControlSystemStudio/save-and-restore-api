@@ -45,7 +45,7 @@ def test_take_snapshot_get_01(clear_sar, library, usesetauth):  # noqa: F811
             configurationNode = {"name": "Test Config"}
             configurationData = {"pvList": [{"pvName": _} for _ in ioc_pvs.keys()]}
 
-            response = SR.config_create(
+            response = SR.config_add(
                 root_folder_uid,
                 configurationNode=configurationNode,
                 configurationData=configurationData,
@@ -72,7 +72,7 @@ def test_take_snapshot_get_01(clear_sar, library, usesetauth):  # noqa: F811
                 configurationNode = {"name": "Test Config"}
                 configurationData = {"pvList": [{"pvName": _} for _ in ioc_pvs.keys()]}
 
-                response = await SR.config_create(
+                response = await SR.config_add(
                     root_folder_uid,
                     configurationNode=configurationNode,
                     configurationData=configurationData,
@@ -112,7 +112,7 @@ def test_take_snapshot_save_01(clear_sar, library, usesetauth):  # noqa: F811
             configurationNode = {"name": "Test Config"}
             configurationData = {"pvList": [{"pvName": _} for _ in ioc_pvs.keys()]}
 
-            response = SR.config_create(
+            response = SR.config_add(
                 root_folder_uid,
                 configurationNode=configurationNode,
                 configurationData=configurationData,
@@ -155,7 +155,7 @@ def test_take_snapshot_save_01(clear_sar, library, usesetauth):  # noqa: F811
                 configurationNode = {"name": "Test Config"}
                 configurationData = {"pvList": [{"pvName": _} for _ in ioc_pvs.keys()]}
 
-                response = await SR.config_create(
+                response = await SR.config_add(
                     root_folder_uid,
                     configurationNode=configurationNode,
                     configurationData=configurationData,
@@ -212,7 +212,7 @@ def test_snapshot_add_01(clear_sar, library, usesetauth):  # noqa: F811
             configurationNode = {"name": "Test Config"}
             configurationData = {"pvList": [{"pvName": _} for _ in ioc_pvs.keys()]}
 
-            response = SR.config_create(
+            response = SR.config_add(
                 root_folder_uid,
                 configurationNode=configurationNode,
                 configurationData=configurationData,
@@ -273,7 +273,7 @@ def test_snapshot_add_01(clear_sar, library, usesetauth):  # noqa: F811
                 configurationNode = {"name": "Test Config"}
                 configurationData = {"pvList": [{"pvName": _} for _ in ioc_pvs.keys()]}
 
-                response = await SR.config_create(
+                response = await SR.config_add(
                     root_folder_uid,
                     configurationNode=configurationNode,
                     configurationData=configurationData,
@@ -352,7 +352,7 @@ def test_restore_node_01(clear_sar, library, usesetauth, restorenode):  # noqa: 
             configurationNode = {"name": "Test Config"}
             configurationData = {"pvList": [{"pvName": _} for _ in ioc_pvs.keys()]}
 
-            response = SR.config_create(
+            response = SR.config_add(
                 root_folder_uid,
                 configurationNode=configurationNode,
                 configurationData=configurationData,
@@ -389,7 +389,7 @@ def test_restore_node_01(clear_sar, library, usesetauth, restorenode):  # noqa: 
                 configurationNode = {"name": "Test Config"}
                 configurationData = {"pvList": [{"pvName": _} for _ in ioc_pvs.keys()]}
 
-                response = await SR.config_create(
+                response = await SR.config_add(
                     root_folder_uid,
                     configurationNode=configurationNode,
                     configurationData=configurationData,
@@ -447,7 +447,7 @@ def test_composite_snapshot_add_01(clear_sar, ioc, library, usesetauth):  # noqa
             configurationData2 = {"pvList": [{"pvName": _} for _ in ioc_pvs.keys()][5:]}
 
             # Create two configurations
-            response = SR.config_create(
+            response = SR.config_add(
                 root_folder_uid,
                 configurationNode=configurationNode1,
                 configurationData=configurationData1,
@@ -455,7 +455,7 @@ def test_composite_snapshot_add_01(clear_sar, ioc, library, usesetauth):  # noqa
             )
             config_uid1 = response["configurationNode"]["uniqueId"]
 
-            response = SR.config_create(
+            response = SR.config_add(
                 root_folder_uid,
                 configurationNode=configurationNode2,
                 configurationData=configurationData2,
@@ -524,7 +524,7 @@ def test_composite_snapshot_add_01(clear_sar, ioc, library, usesetauth):  # noqa
                 configurationData2 = {"pvList": [{"pvName": _} for _ in ioc_pvs.keys()][5:]}
 
                 # Create two configurations
-                response = await SR.config_create(
+                response = await SR.config_add(
                     root_folder_uid,
                     configurationNode=configurationNode1,
                     configurationData=configurationData1,
@@ -532,7 +532,7 @@ def test_composite_snapshot_add_01(clear_sar, ioc, library, usesetauth):  # noqa
                 )
                 config_uid1 = response["configurationNode"]["uniqueId"]
 
-                response = await SR.config_create(
+                response = await SR.config_add(
                     root_folder_uid,
                     configurationNode=configurationNode2,
                     configurationData=configurationData2,

@@ -131,9 +131,9 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         method, url = self._prepare_config_get(uniqueNodeId=uniqueNodeId)
         return await self.send_request(method, url)
 
-    async def config_create(self, parentNodeId, *, configurationNode, configurationData, auth=None):
+    async def config_add(self, parentNodeId, *, configurationNode, configurationData, auth=None):
         # Reusing docstrings from the threaded version
-        method, url, params = self._prepare_config_create(
+        method, url, params = self._prepare_config_add(
             parentNodeId=parentNodeId, configurationNode=configurationNode, configurationData=configurationData
         )
         return await self.send_request(method, url, params=params, auth=auth)
@@ -334,7 +334,7 @@ SaveRestoreAPI.nodes_delete.__doc__ = _SaveRestoreAPI_Threads.nodes_delete.__doc
 SaveRestoreAPI.node_get_children.__doc__ = _SaveRestoreAPI_Threads.node_get_children.__doc__
 SaveRestoreAPI.node_get_parent.__doc__ = _SaveRestoreAPI_Threads.node_get_parent.__doc__
 SaveRestoreAPI.config_get.__doc__ = _SaveRestoreAPI_Threads.config_get.__doc__
-SaveRestoreAPI.config_create.__doc__ = _SaveRestoreAPI_Threads.config_create.__doc__
+SaveRestoreAPI.config_add.__doc__ = _SaveRestoreAPI_Threads.config_add.__doc__
 SaveRestoreAPI.config_update.__doc__ = _SaveRestoreAPI_Threads.config_update.__doc__
 SaveRestoreAPI.tags_get.__doc__ = _SaveRestoreAPI_Threads.tags_get.__doc__
 SaveRestoreAPI.tags_add.__doc__ = _SaveRestoreAPI_Threads.tags_add.__doc__
