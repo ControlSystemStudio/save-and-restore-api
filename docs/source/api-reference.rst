@@ -12,6 +12,7 @@ Synchronous Communication with Save-And-Restore Server
    :toctree: generated
 
     SaveRestoreAPI
+    SaveRestoreAPI.send_request
 
 Authentication
 **************

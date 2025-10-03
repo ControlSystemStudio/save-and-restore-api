@@ -73,31 +73,25 @@ class _SaveRestoreAPI_Base:
         """
         self._auth = None
 
-    # def set_username_password(self, username=None, password=None):
-    #     if not isinstance(username, str):
-    #         print("Username: ", end="")
-    #         username = input()
-    #     if not isinstance(password, str):
-    #         password = getpass.getpass()
-
-    #     self._username = username
-    #     self._password = password
-
-    # # TODO: rewrite the logic in this function
-    # def _check_response(self, *, request, response):
-    #     """
-    #     Check if response is a dictionary and has ``"success": True``. Raise an exception
-    #     if the request is considered failed and exceptions are allowed. If response is
-    #     a dictionary and contains no ``"success"``, then it is considered successful.
-    #     """
-    #     if self._request_fail_exceptions:
-    #         # The response must be a list or a dictionary. If the response is a dictionary
-    #         #   and the key 'success': False, then consider the request failed. If there
-    #         #   is not 'success' key, then consider the request successful.
-    #         is_iterable = isinstance(response, Iterable) and not isinstance(response, str)
-    #         is_mapping = isinstance(response, Mapping)
-    #         if not any([is_iterable, is_mapping]) or (is_mapping and not response.get("success", True)):
-    #             raise self.RequestFailedError(request, response)
+    def _prepare_request(
+        self, *, method, body_json=None, params=None, headers=None, data=None, timeout=None, auth=None
+    ):
+        kwargs = {}
+        if body_json:
+            kwargs.update({"json": body_json})
+        if params:
+            kwargs.update({"params": params})
+        if headers:
+            kwargs.update({"headers": headers})
+        if data:
+            kwargs.update({"data": data})
+        if timeout is not None:
+            kwargs.update({"timeout": self._adjust_timeout(timeout)})
+        if method.upper() != "GET":
+            auth = auth or self._auth
+            if auth is not None:
+                kwargs.update({"auth": auth})
+        return kwargs
 
     def _process_response(self, *, client_response):
         client_response.raise_for_status()
@@ -109,7 +103,7 @@ class _SaveRestoreAPI_Base:
                 response = client_response.text
         return response
 
-    def _process_comm_exception(self, *, method, params, client_response):
+    def _process_comm_exception(self, *, method, body_json, client_response):
         """
         The function must be called from ``except`` block and returns response with an error message
         or raises an exception.
@@ -118,7 +112,7 @@ class _SaveRestoreAPI_Base:
             raise
 
         except httpx.TimeoutException as ex:
-            raise self.RequestTimeoutError(ex, {"method": method, "params": params}) from ex
+            raise self.RequestTimeoutError(ex, {"method": method, "body_json": body_json}) from ex
 
         except httpx.RequestError as ex:
             raise self.HTTPRequestError(f"HTTP request error: {ex}") from ex
@@ -145,26 +139,6 @@ class _SaveRestoreAPI_Base:
             else:
                 raise self.HTTPServerError(exc, **common_params) from exc
 
-    def _prepare_request(
-        self, *, method, params=None, url_params=None, headers=None, data=None, timeout=None, auth=None
-    ):
-        kwargs = {}
-        if params:
-            kwargs.update({"json": params})
-        if url_params:
-            kwargs.update({"params": url_params})
-        if headers:
-            kwargs.update({"headers": headers})
-        if data:
-            kwargs.update({"data": data})
-        if timeout is not None:
-            kwargs.update({"timeout": self._adjust_timeout(timeout)})
-        if method.upper() != "GET":
-            auth = auth or self._auth
-            if auth is not None:
-                kwargs.update({"auth": auth})
-        return kwargs
-
     # =============================================================================================
     #                         INFO-CONTROLLER API METHODS
     # =============================================================================================
@@ -183,8 +157,8 @@ class _SaveRestoreAPI_Base:
 
     def _prepare_search(self, *, allRequestParams):
         method, url = "GET", "/search"
-        url_params = allRequestParams
-        return method, url, url_params
+        params = allRequestParams
+        return method, url, params
 
     # =============================================================================================
     #                         HELP-RESOURCE API METHODS
@@ -192,8 +166,8 @@ class _SaveRestoreAPI_Base:
 
     def _prepare_help(self, *, what, lang):
         method, url = "GET", f"/help/{what}"
-        url_params = {"lang": lang} if lang else None
-        return method, url, url_params
+        params = {"lang": lang} if lang else None
+        return method, url, params
 
     # =============================================================================================
     #                         AUTHENTICATION-CONTROLLER API METHODS
@@ -201,8 +175,8 @@ class _SaveRestoreAPI_Base:
 
     def _prepare_login(self, *, username=None, password=None):
         method, url = "POST", "/login"
-        params = {"username": username, "password": password}
-        return method, url, params
+        body_json = {"username": username, "password": password}
+        return method, url, body_json
 
     # =============================================================================================
     #                         NODE-CONTROLLER API METHODS
@@ -214,17 +188,17 @@ class _SaveRestoreAPI_Base:
 
     def _prepare_nodes_get(self, *, uniqueIds):
         method, url = "GET", "/nodes"
-        params = uniqueIds
-        return method, url, params
+        body_json = uniqueIds
+        return method, url, body_json
 
     def _prepare_node_add(self, *, parentNodeId, name, nodeType, **kwargs):
         node_types = ("FOLDER", "CONFIGURATION")
         if nodeType not in node_types:
             raise self.RequestParameterError(f"Invalid nodeType: {nodeType!r}. Supported types: {node_types}.")
-        method, url, url_params = "PUT", "/node", {"parentNodeId": parentNodeId}
-        params = kwargs
-        params.update({"name": name, "nodeType": nodeType})
-        return method, url, url_params, params
+        method, url, params = "PUT", "/node", {"parentNodeId": parentNodeId}
+        body_json = kwargs
+        body_json.update({"name": name, "nodeType": nodeType})
+        return method, url, params, body_json
 
     def _prepare_node_delete(self, *, nodeId):
         method, url = "DELETE", f"/node/{nodeId}"
@@ -232,8 +206,8 @@ class _SaveRestoreAPI_Base:
 
     def _prepare_nodes_delete(self, *, uniqueIds):
         method, url = "DELETE", "/node"
-        params = uniqueIds
-        return method, url, params
+        body_json = uniqueIds
+        return method, url, body_json
 
     def _prepare_node_get_children(self, *, uniqueNodeId):
         method, url = "GET", f"/node/{uniqueNodeId}/children"
@@ -254,13 +228,13 @@ class _SaveRestoreAPI_Base:
     def _prepare_config_add(self, *, parentNodeId, configurationNode, configurationData):
         method, url = "PUT", f"/config?parentNodeId={parentNodeId}"
         configurationData = configurationData or {}
-        params = {"configurationNode": configurationNode, "configurationData": configurationData}
-        return method, url, params
+        body_json = {"configurationNode": configurationNode, "configurationData": configurationData}
+        return method, url, body_json
 
     def _prepare_config_update(self, *, configurationNode, configurationData):
         method, url = "POST", "/config"
-        params = {"configurationNode": configurationNode, "configurationData": configurationData}
-        return method, url, params
+        body_json = {"configurationNode": configurationNode, "configurationData": configurationData}
+        return method, url, body_json
 
     # =============================================================================================
     #                         TAG-CONTROLLER API METHODS
@@ -272,13 +246,13 @@ class _SaveRestoreAPI_Base:
 
     def _prepare_tags_add(self, *, uniqueNodeIds, tag):
         method, url = "POST", "/tags"
-        params = {"uniqueNodeIds": uniqueNodeIds, "tag": tag}
-        return method, url, params
+        body_json = {"uniqueNodeIds": uniqueNodeIds, "tag": tag}
+        return method, url, body_json
 
     def _prepare_tags_delete(self, *, uniqueNodeIds, tag):
         method, url = "DELETE", "/tags"
-        params = {"uniqueNodeIds": uniqueNodeIds, "tag": tag}
-        return method, url, params
+        body_json = {"uniqueNodeIds": uniqueNodeIds, "tag": tag}
+        return method, url, body_json
 
     # =============================================================================================
     #                         TAKE-SNAPSHOT-CONTROLLER API METHODS
@@ -290,8 +264,8 @@ class _SaveRestoreAPI_Base:
 
     def _prepare_take_snapshot_save(self, *, uniqueNodeId, name, comment):
         method, url = "PUT", f"/take-snapshot/{uniqueNodeId}"
-        url_params = {"name": name, "comment": comment}
-        return method, url, url_params
+        params = {"name": name, "comment": comment}
+        return method, url, params
 
     # =============================================================================================
     #                         SNAPSHOT-CONTROLLER API METHODS
@@ -303,14 +277,14 @@ class _SaveRestoreAPI_Base:
 
     def _prepare_snapshot_add(self, *, parentNodeId, snapshotNode, snapshotData):
         method, url = "PUT", "/snapshot"
-        params = {"snapshotNode": snapshotNode, "snapshotData": snapshotData}
-        url_params = {"parentNodeId": parentNodeId}
-        return method, url, url_params, params
+        body_json = {"snapshotNode": snapshotNode, "snapshotData": snapshotData}
+        params = {"parentNodeId": parentNodeId}
+        return method, url, params, body_json
 
     def _prepare_snapshot_update(self, *, snapshotNode, snapshotData):
         method, url = "POST", "/snapshot"
-        params = {"snapshotNode": snapshotNode, "snapshotData": snapshotData}
-        return method, url, params
+        body_json = {"snapshotNode": snapshotNode, "snapshotData": snapshotData}
+        return method, url, body_json
 
     def _prepare_snapshots_get(self):
         method, url = "GET", "/snapshots"
@@ -334,19 +308,25 @@ class _SaveRestoreAPI_Base:
 
     def _prepare_composite_snapshot_add(self, *, parentNodeId, compositeSnapshotNode, compositeSnapshotData):
         method, url = "PUT", "/composite-snapshot"
-        params = {"compositeSnapshotNode": compositeSnapshotNode, "compositeSnapshotData": compositeSnapshotData}
-        url_params = {"parentNodeId": parentNodeId}
-        return method, url, url_params, params
+        body_json = {
+            "compositeSnapshotNode": compositeSnapshotNode,
+            "compositeSnapshotData": compositeSnapshotData,
+        }
+        params = {"parentNodeId": parentNodeId}
+        return method, url, params, body_json
 
     def _prepare_composite_snapshot_update(self, *, compositeSnapshotNode, compositeSnapshotData):
         method, url = "POST", "/composite-snapshot"
-        params = {"compositeSnapshotNode": compositeSnapshotNode, "compositeSnapshotData": compositeSnapshotData}
-        return method, url, params
+        body_json = {
+            "compositeSnapshotNode": compositeSnapshotNode,
+            "compositeSnapshotData": compositeSnapshotData,
+        }
+        return method, url, body_json
 
     def _prepare_composite_snapshot_consistency_check(self, *, uniqueNodeIds):
         method, url = "POST", "/composite-snapshot-consistency-check"
-        params = uniqueNodeIds
-        return method, url, params
+        body_json = uniqueNodeIds
+        return method, url, body_json
 
     # =============================================================================================
     #                     SNAPSHOT-RESTORE-CONTROLLER API METHODS
@@ -354,13 +334,13 @@ class _SaveRestoreAPI_Base:
 
     def _prepare_restore_node(self, *, nodeId):
         method, url = "POST", "/restore/node"
-        url_params = {"nodeId": nodeId}
-        return method, url, url_params
+        params = {"nodeId": nodeId}
+        return method, url, params
 
     def _prepare_restore_items(self, *, snapshotItems):
         method, url = "POST", "/restore/items"
-        params = snapshotItems
-        return method, url, params
+        body_json = snapshotItems
+        return method, url, body_json
 
     # =============================================================================================
     #                     COMPARISON-CONTROLLER API METHODS
@@ -368,16 +348,16 @@ class _SaveRestoreAPI_Base:
 
     def _prepare_compare(self, *, nodeId, tolerance, compareMode, skipReadback):
         method, url = "GET", f"/compare/{nodeId}"
-        url_params = {}
+        params = {}
         if tolerance:
-            url_params["tolerance"] = tolerance
+            params["tolerance"] = tolerance
         if compareMode:
-            url_params["compareMode"] = compareMode
+            params["compareMode"] = compareMode
         if skipReadback is not None:
-            url_params["skipReadback"] = str(skipReadback).lower()
-        if not url_params:
-            url_params = None
-        return method, url, url_params
+            params["skipReadback"] = str(skipReadback).lower()
+        if not params:
+            params = None
+        return method, url, params
 
     # =============================================================================================
     #                     FILTER-CONTROLLER API METHODS
@@ -385,8 +365,8 @@ class _SaveRestoreAPI_Base:
 
     def _prepare_filter_add(self, *, filter):
         method, url = "PUT", "/filter"
-        params = filter
-        return method, url, params
+        body_json = filter
+        return method, url, body_json
 
     def _prepare_filters_get(self):
         method, url = "GET", "/filters"
@@ -403,15 +383,15 @@ class _SaveRestoreAPI_Base:
 
     def _prepare_structure_move(self, *, nodeIds, newParentNodeId):
         method, url = "POST", "/move"
-        url_params = {"to": newParentNodeId}
-        params = nodeIds
-        return method, url, params, url_params
+        params = {"to": newParentNodeId}
+        body_json = nodeIds
+        return method, url, body_json, params
 
     def _prepare_structure_copy(self, *, nodeIds, newParentNodeId):
         method, url = "POST", "/copy"
-        url_params = {"to": newParentNodeId}
-        params = nodeIds
-        return method, url, params, url_params
+        params = {"to": newParentNodeId}
+        body_json = nodeIds
+        return method, url, body_json, params
 
     def _prepare_structure_path_get(self, *, uniqueNodeId):
         method, url = "GET", f"/path/{uniqueNodeId}"
@@ -419,8 +399,8 @@ class _SaveRestoreAPI_Base:
 
     def _prepare_structure_path_nodes(self, *, path):
         method, url = "GET", "/path"
-        url_params = {"path": path}
-        return method, url, url_params
+        params = {"path": path}
+        return method, url, params
 
     # =============================================================================================
 
@@ -436,7 +416,7 @@ class _SaveRestoreAPI_Base:
     #         },
     #     }
     #     print(f"config_dict=\n{pprint.pformat(config_dict)}")
-    #     return self.send_request("PUT", f"/config?parentNodeId={parent_node_uid}", json=config_dict)
+    #     return self.send_request("PUT", f"/config?parentNodeId={parent_node_uid}", body_json=config_dict)
 
     # def update_config(self, node_uid, name, pv_list):
     #     config_dict = {
@@ -451,5 +431,5 @@ class _SaveRestoreAPI_Base:
     #         },
     #     }
     #     print(f"config_dict=\n{pprint.pformat(config_dict)}")
-    #     # return self.send_request("POST", f"/config/{node_uid}", json=config_dict)
-    #     return self.send_request("POST", "/config", json=config_dict)
+    #     # return self.send_request("POST", f"/config/{node_uid}", body_json=config_dict)
+    #     return self.send_request("POST", "/config", body_json=config_dict)

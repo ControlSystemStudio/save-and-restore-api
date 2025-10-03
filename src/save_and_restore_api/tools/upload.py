@@ -15,6 +15,16 @@ BASE_URL = "http://epics-services-hxn.nsls2.bnl.local:20381/save-restore"
 timeout = 2
 file_name = "auto_settings.sav"
 
+# def set_username_password(self, username=None, password=None):
+#     if not isinstance(username, str):
+#         print("Username: ", end="")
+#         username = input()
+#     if not isinstance(password, str):
+#         password = getpass.getpass()
+
+#     self._username = username
+#     self._password = password
+
 
 def add_to_pv_list(pv_list, *, pv_name):
     pv_list.append({"pvName": pv_name})

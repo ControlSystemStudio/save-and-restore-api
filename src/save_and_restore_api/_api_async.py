@@ -20,14 +20,14 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         await self.close()
 
     async def send_request(
-        self, method, url, *, params=None, url_params=None, headers=None, data=None, timeout=None, auth=None
+        self, method, url, *, body_json=None, params=None, headers=None, data=None, timeout=None, auth=None
     ):
         try:
             client_response = None
             kwargs = self._prepare_request(
                 method=method,
+                body_json=body_json,
                 params=params,
-                url_params=url_params,
                 headers=headers,
                 data=data,
                 timeout=timeout,
@@ -36,7 +36,9 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
             client_response = await self._client.request(method, url, **kwargs)
             response = self._process_response(client_response=client_response)
         except Exception:
-            response = self._process_comm_exception(method=method, params=params, client_response=client_response)
+            response = self._process_comm_exception(
+                method=method, body_json=body_json, client_response=client_response
+            )
 
         return response
 
@@ -60,8 +62,8 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
     async def search(self, allRequestParams):
         # Reusing docstrings from the threaded version
-        method, url, url_params = self._prepare_search(allRequestParams=allRequestParams)
-        return await self.send_request(method, url, url_params=url_params)
+        method, url, params = self._prepare_search(allRequestParams=allRequestParams)
+        return await self.send_request(method, url, params=params)
 
     # =============================================================================================
     #                         HELP-RESOURCE API METHODS
@@ -69,8 +71,8 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
     async def help(self, what, *, lang=None):
         # Reusing docstrings from the threaded version
-        method, url, url_params = self._prepare_help(what=what, lang=lang)
-        return await self.send_request(method, url, url_params=url_params)
+        method, url, params = self._prepare_help(what=what, lang=lang)
+        return await self.send_request(method, url, params=params)
 
     # =============================================================================================
     #                         AUTHENTICATION-CONTROLLER API METHODS
@@ -78,8 +80,8 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
     async def login(self, *, username=None, password=None):
         # Reusing docstrings from the threaded version
-        method, url, params = self._prepare_login(username=username, password=password)
-        return await self.send_request(method, url, params=params)
+        method, url, body_json = self._prepare_login(username=username, password=password)
+        return await self.send_request(method, url, body_json=body_json)
 
     # =============================================================================================
     #                         NODE-CONTROLLER API METHODS
@@ -92,15 +94,15 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
     async def nodes_get(self, uniqueIds):
         # Reusing docstrings from the threaded version
-        method, url, params = self._prepare_nodes_get(uniqueIds=uniqueIds)
-        return await self.send_request(method, url, params=params)
+        method, url, body_json = self._prepare_nodes_get(uniqueIds=uniqueIds)
+        return await self.send_request(method, url, body_json=body_json)
 
     async def node_add(self, parentNodeId, *, name, nodeType, auth=None, **kwargs):
         # Reusing docstrings from the threaded version
-        method, url, url_params, params = self._prepare_node_add(
+        method, url, params, body_json = self._prepare_node_add(
             parentNodeId=parentNodeId, name=name, nodeType=nodeType, **kwargs
         )
-        return await self.send_request(method, url, url_params=url_params, params=params, auth=auth)
+        return await self.send_request(method, url, params=params, body_json=body_json, auth=auth)
 
     async def node_delete(self, nodeId, *, auth=None):
         # Reusing docstrings from the threaded version
@@ -109,8 +111,8 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
     async def nodes_delete(self, uniqueIds, *, auth=None):
         # Reusing docstrings from the threaded version
-        method, url, params = self._prepare_nodes_delete(uniqueIds=uniqueIds)
-        return await self.send_request(method, url, params=params, auth=auth)
+        method, url, body_json = self._prepare_nodes_delete(uniqueIds=uniqueIds)
+        return await self.send_request(method, url, body_json=body_json, auth=auth)
 
     async def node_get_children(self, uniqueNodeId):
         # Reusing docstrings from the threaded version
@@ -133,17 +135,17 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
     async def config_add(self, parentNodeId, *, configurationNode, configurationData, auth=None):
         # Reusing docstrings from the threaded version
-        method, url, params = self._prepare_config_add(
+        method, url, body_json = self._prepare_config_add(
             parentNodeId=parentNodeId, configurationNode=configurationNode, configurationData=configurationData
         )
-        return await self.send_request(method, url, params=params, auth=auth)
+        return await self.send_request(method, url, body_json=body_json, auth=auth)
 
     async def config_update(self, *, configurationNode, configurationData, auth=None):
         # Reusing docstrings from the threaded version
-        method, url, params = self._prepare_config_update(
+        method, url, body_json = self._prepare_config_update(
             configurationNode=configurationNode, configurationData=configurationData
         )
-        return await self.send_request(method, url, params=params, auth=auth)
+        return await self.send_request(method, url, body_json=body_json, auth=auth)
 
     # =============================================================================================
     #                         TAG-CONTROLLER API METHODS
@@ -156,13 +158,13 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
     async def tags_add(self, *, uniqueNodeIds, tag, auth=None):
         # Reusing docstrings from the threaded version
-        method, url, params = self._prepare_tags_add(uniqueNodeIds=uniqueNodeIds, tag=tag)
-        return await self.send_request(method, url, params=params, auth=auth)
+        method, url, body_json = self._prepare_tags_add(uniqueNodeIds=uniqueNodeIds, tag=tag)
+        return await self.send_request(method, url, body_json=body_json, auth=auth)
 
     async def tags_delete(self, *, uniqueNodeIds, tag, auth=None):
         # Reusing docstrings from the threaded version
-        method, url, params = self._prepare_tags_delete(uniqueNodeIds=uniqueNodeIds, tag=tag)
-        return await self.send_request(method, url, params=params, auth=auth)
+        method, url, body_json = self._prepare_tags_delete(uniqueNodeIds=uniqueNodeIds, tag=tag)
+        return await self.send_request(method, url, body_json=body_json, auth=auth)
 
     # =============================================================================================
     #                         TAKE-SNAPSHOT-CONTROLLER API METHODS
@@ -175,10 +177,10 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
     async def take_snapshot_save(self, uniqueNodeId, *, name=None, comment=None, auth=None):
         # Reusing docstrings from the threaded version
-        method, url, url_params = self._prepare_take_snapshot_save(
+        method, url, params = self._prepare_take_snapshot_save(
             uniqueNodeId=uniqueNodeId, name=name, comment=comment
         )
-        return await self.send_request(method, url, url_params=url_params, auth=auth)
+        return await self.send_request(method, url, params=params, auth=auth)
 
     # =============================================================================================
     #                         SNAPSHOT-CONTROLLER API METHODS
@@ -191,15 +193,17 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
     async def snapshot_add(self, parentNodeId, *, snapshotNode, snapshotData, auth=None):
         # Reusing docstrings from the threaded version
-        method, url, url_params, params = self._prepare_snapshot_add(
+        method, url, params, body_json = self._prepare_snapshot_add(
             parentNodeId=parentNodeId, snapshotNode=snapshotNode, snapshotData=snapshotData
         )
-        return await self.send_request(method, url, params=params, url_params=url_params, auth=auth)
+        return await self.send_request(method, url, body_json=body_json, params=params, auth=auth)
 
     async def snapshot_update(self, *, snapshotNode, snapshotData, auth=None):
         # Reusing docstrings from the threaded version
-        method, url, params = self._prepare_snapshot_update(snapshotNode=snapshotNode, snapshotData=snapshotData)
-        return await self.send_request(method, url, params=params, auth=auth)
+        method, url, body_json = self._prepare_snapshot_update(
+            snapshotNode=snapshotNode, snapshotData=snapshotData
+        )
+        return await self.send_request(method, url, body_json=body_json, auth=auth)
 
     async def snapshots_get(self):
         # Reusing docstrings from the threaded version
@@ -229,25 +233,25 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         self, parentNodeId, *, compositeSnapshotNode, compositeSnapshotData, auth=None
     ):
         # Reusing docstrings from the threaded version
-        method, url, url_params, params = self._prepare_composite_snapshot_add(
+        method, url, params, body_json = self._prepare_composite_snapshot_add(
             parentNodeId=parentNodeId,
             compositeSnapshotNode=compositeSnapshotNode,
             compositeSnapshotData=compositeSnapshotData,
         )
-        return await self.send_request(method, url, url_params=url_params, params=params, auth=auth)
+        return await self.send_request(method, url, params=params, body_json=body_json, auth=auth)
 
     async def composite_snapshot_update(self, *, compositeSnapshotNode, compositeSnapshotData, auth=None):
         # Reusing docstrings from the threaded version
-        method, url, params = self._prepare_composite_snapshot_update(
+        method, url, body_json = self._prepare_composite_snapshot_update(
             compositeSnapshotNode=compositeSnapshotNode,
             compositeSnapshotData=compositeSnapshotData,
         )
-        return await self.send_request(method, url, params=params, auth=auth)
+        return await self.send_request(method, url, body_json=body_json, auth=auth)
 
     async def composite_snapshot_consistency_check(self, uniqueNodeIds, *, auth=None):
         # Reusing docstrings from the threaded version
-        method, url, params = self._prepare_composite_snapshot_consistency_check(uniqueNodeIds=uniqueNodeIds)
-        return await self.send_request(method, url, params=params, auth=auth)
+        method, url, body_json = self._prepare_composite_snapshot_consistency_check(uniqueNodeIds=uniqueNodeIds)
+        return await self.send_request(method, url, body_json=body_json, auth=auth)
 
     # =============================================================================================
     #                     SNAPSHOT-RESTORE-CONTROLLER API METHODS
@@ -255,13 +259,13 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
     async def restore_node(self, nodeId, *, auth=None):
         # Reusing docstrings from the threaded version
-        method, url, url_params = self._prepare_restore_node(nodeId=nodeId)
-        return await self.send_request(method, url, url_params=url_params, auth=auth)
+        method, url, params = self._prepare_restore_node(nodeId=nodeId)
+        return await self.send_request(method, url, params=params, auth=auth)
 
     async def restore_items(self, *, snapshotItems, auth=None):
         # Reusing docstrings from the threaded version
-        method, url, params = self._prepare_restore_items(snapshotItems=snapshotItems)
-        return await self.send_request(method, url, params=params, auth=auth)
+        method, url, body_json = self._prepare_restore_items(snapshotItems=snapshotItems)
+        return await self.send_request(method, url, body_json=body_json, auth=auth)
 
     # =============================================================================================
     #                     COMPARISON-CONTROLLER API METHODS
@@ -269,10 +273,10 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
     async def compare(self, nodeId, *, tolerance=None, compareMode=None, skipReadback=None):
         # Reusing docstrings from the threaded version
-        method, url, url_params = self._prepare_compare(
+        method, url, params = self._prepare_compare(
             nodeId=nodeId, tolerance=tolerance, compareMode=compareMode, skipReadback=skipReadback
         )
-        return await self.send_request(method, url, url_params=url_params)
+        return await self.send_request(method, url, params=params)
 
     # =============================================================================================
     #                     FILTER-CONTROLLER API METHODS
@@ -280,8 +284,8 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
     async def filter_add(self, filter, *, auth=None):
         # Reusing docstrings from the threaded version
-        method, url, params = self._prepare_filter_add(filter=filter)
-        return await self.send_request(method, url, params=params, auth=auth)
+        method, url, body_json = self._prepare_filter_add(filter=filter)
+        return await self.send_request(method, url, body_json=body_json, auth=auth)
 
     async def filters_get(self):
         # Reusing docstrings from the threaded version
@@ -299,17 +303,17 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
     async def structure_move(self, nodeIds, newParentNodeId, *, auth=None):
         # Reusing docstrings from the threaded version
-        method, url, params, url_params = self._prepare_structure_move(
+        method, url, body_json, params = self._prepare_structure_move(
             nodeIds=nodeIds, newParentNodeId=newParentNodeId
         )
-        return await self.send_request(method, url, params=params, url_params=url_params, auth=auth)
+        return await self.send_request(method, url, body_json=body_json, params=params, auth=auth)
 
     async def structure_copy(self, nodeIds, newParentNodeId, *, auth=None):
         # Reusing docstrings from the threaded version
-        method, url, params, url_params = self._prepare_structure_copy(
+        method, url, body_json, params = self._prepare_structure_copy(
             nodeIds=nodeIds, newParentNodeId=newParentNodeId
         )
-        return await self.send_request(method, url, params=params, url_params=url_params, auth=auth)
+        return await self.send_request(method, url, body_json=body_json, params=params, auth=auth)
 
     async def structure_path_get(self, uniqueNodeId):
         # Reusing docstrings from the threaded version
@@ -318,9 +322,11 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
     async def structure_path_nodes(self, path):
         # Reusing docstrings from the threaded version
-        method, url, url_params = self._prepare_structure_path_nodes(path=path)
-        return await self.send_request(method, url, url_params=url_params)
+        method, url, params = self._prepare_structure_path_nodes(path=path)
+        return await self.send_request(method, url, params=params)
 
+
+SaveRestoreAPI.send_request.__doc__ = _SaveRestoreAPI_Threads.send_request.__doc__
 
 SaveRestoreAPI.info_get.__doc__ = _SaveRestoreAPI_Threads.info_get.__doc__
 SaveRestoreAPI.version_get.__doc__ = _SaveRestoreAPI_Threads.version_get.__doc__

@@ -19,14 +19,52 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         self.close()
 
     def send_request(
-        self, method, url, *, params=None, url_params=None, headers=None, data=None, timeout=None, auth=None
+        self, method, url, *, body_json=None, params=None, headers=None, data=None, timeout=None, auth=None
     ):
+        """
+        Send HTTP request to the server.
+
+        Parameters
+        ----------
+        method : str
+            HTTP method: GET, POST, PUT, DELETE
+        url : str
+            URL (path) of the API endpoint. If ``base_url`` is set in the class constructor, then only
+            the remaining part of the URL should be specified here.
+        body_json : dict, optional
+            Dictionary to be sent as JSON in the request body.
+        params : dict, optional
+            Dictionary of query parameters to be sent in the URL.
+        headers : dict, optional
+            Dictionary of HTTP headers to be sent with the request.
+        data : dict, optional
+            Dictionary of form data to be sent in the request body.
+        timeout : float, optional
+            Timeout for this request in seconds. If not specified or None, the default timeout set in the
+            class constructor is used.
+        auth : httpx.BasicAuth, optional
+            Object with authentication data (generated using ``auth_gen`` method). If not specified or None,
+            then the authentication set using ``auth_set`` method is used.
+
+        Returns
+        -------
+        dict, str
+            Response from the server. If the response contains JSON data, then a dictionary is returned.
+            Otherwise, the response text is returned.
+
+        Raises
+        ------
+        SaveRestoreAPI.RequestParameterError, SaveRestoreAPI.RequestTimeoutError,
+        SaveRestoreAPI.RequestFailedError, SaveRestoreAPI.HTTPRequestError,
+        SaveRestoreAPI.HTTPClientError, SaveRestoreAPI.HTTPServerError
+
+        """
         try:
             client_response = None
             kwargs = self._prepare_request(
                 method=method,
+                body_json=body_json,
                 params=params,
-                url_params=url_params,
                 headers=headers,
                 data=data,
                 timeout=timeout,
@@ -35,7 +73,9 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
             client_response = self._client.request(method, url, **kwargs)
             response = self._process_response(client_response=client_response)
         except Exception:
-            response = self._process_comm_exception(method=method, params=params, client_response=client_response)
+            response = self._process_comm_exception(
+                method=method, body_json=body_json, client_response=client_response
+            )
 
         return response
 
@@ -76,8 +116,8 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
         API: GET /search
         """
-        method, url, url_params = self._prepare_search(allRequestParams=allRequestParams)
-        return self.send_request(method, url, url_params=url_params)
+        method, url, params = self._prepare_search(allRequestParams=allRequestParams)
+        return self.send_request(method, url, params=params)
 
     # =============================================================================================
     #                         HELP-RESOURCE API METHODS
@@ -89,8 +129,8 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
         API: GET /help/{what}?lang={lang}
         """
-        method, url, url_params = self._prepare_help(what=what, lang=lang)
-        return self.send_request(method, url, url_params=url_params)
+        method, url, params = self._prepare_help(what=what, lang=lang)
+        return self.send_request(method, url, params=params)
 
     # =============================================================================================
     #                         AUTHENTICATION-CONTROLLER API METHODS
@@ -102,8 +142,8 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
         API: POST /login
         """
-        method, url, params = self._prepare_login(username=username, password=password)
-        return self.send_request(method, url, params=params)
+        method, url, body_json = self._prepare_login(username=username, password=password)
+        return self.send_request(method, url, body_json=body_json)
 
     # =============================================================================================
     #                         NODE-CONTROLLER API METHODS
@@ -124,8 +164,8 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
         API: GET /nodes
         """
-        method, url, params = self._prepare_nodes_get(uniqueIds=uniqueIds)
-        return self.send_request(method, url, params=params)
+        method, url, body_json = self._prepare_nodes_get(uniqueIds=uniqueIds)
+        return self.send_request(method, url, body_json=body_json)
 
     def node_add(self, parentNodeId, *, name, nodeType, auth=None, **kwargs):
         """
@@ -134,10 +174,10 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
         API: PUT /node?parentNodeId={parentNodeId}
         """
-        method, url, url_params, params = self._prepare_node_add(
+        method, url, params, body_json = self._prepare_node_add(
             parentNodeId=parentNodeId, name=name, nodeType=nodeType, **kwargs
         )
-        return self.send_request(method, url, url_params=url_params, params=params, auth=auth)
+        return self.send_request(method, url, params=params, body_json=body_json, auth=auth)
 
     def node_delete(self, nodeId, *, auth=None):
         """
@@ -156,8 +196,8 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
         API: DELETE /node
         """
-        method, url, params = self._prepare_nodes_delete(uniqueIds=uniqueIds)
-        return self.send_request(method, url, params=params, auth=auth)
+        method, url, body_json = self._prepare_nodes_delete(uniqueIds=uniqueIds)
+        return self.send_request(method, url, body_json=body_json, auth=auth)
 
     def node_get_children(self, uniqueNodeId):
         """
@@ -209,10 +249,10 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
         API: PUT /config?parentNodeId={parentNodeId}
         """
-        method, url, params = self._prepare_config_add(
+        method, url, body_json = self._prepare_config_add(
             parentNodeId=parentNodeId, configurationNode=configurationNode, configurationData=configurationData
         )
-        return self.send_request(method, url, params=params, auth=auth)
+        return self.send_request(method, url, body_json=body_json, auth=auth)
 
     def config_update(self, *, configurationNode, configurationData, auth=None):
         """
@@ -222,10 +262,10 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
         API: POST /config
         """
-        method, url, params = self._prepare_config_update(
+        method, url, body_json = self._prepare_config_update(
             configurationNode=configurationNode, configurationData=configurationData
         )
-        return self.send_request(method, url, params=params, auth=auth)
+        return self.send_request(method, url, body_json=body_json, auth=auth)
 
     # =============================================================================================
     #                         TAG-CONTROLLER API METHODS
@@ -247,8 +287,8 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
         API: POST /tags
         """
-        method, url, params = self._prepare_tags_add(uniqueNodeIds=uniqueNodeIds, tag=tag)
-        return self.send_request(method, url, params=params, auth=auth)
+        method, url, body_json = self._prepare_tags_add(uniqueNodeIds=uniqueNodeIds, tag=tag)
+        return self.send_request(method, url, body_json=body_json, auth=auth)
 
     def tags_delete(self, *, uniqueNodeIds, tag, auth=None):
         """
@@ -257,8 +297,8 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
         API: DELETE /tags
         """
-        method, url, params = self._prepare_tags_delete(uniqueNodeIds=uniqueNodeIds, tag=tag)
-        return self.send_request(method, url, params=params, auth=auth)
+        method, url, body_json = self._prepare_tags_delete(uniqueNodeIds=uniqueNodeIds, tag=tag)
+        return self.send_request(method, url, body_json=body_json, auth=auth)
 
     # =============================================================================================
     #                         TAKE-SNAPSHOT-CONTROLLER API METHODS
@@ -283,10 +323,10 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
         API: PUT /take-snapshot/{uniqueNodeId}
         """
-        method, url, url_params = self._prepare_take_snapshot_save(
+        method, url, params = self._prepare_take_snapshot_save(
             uniqueNodeId=uniqueNodeId, name=name, comment=comment
         )
-        return self.send_request(method, url, url_params=url_params, auth=auth)
+        return self.send_request(method, url, params=params, auth=auth)
 
     # =============================================================================================
     #                         SNAPSHOT-CONTROLLER API METHODS
@@ -308,10 +348,10 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
         API: PUT /snapshot?parentNodeId={parentNodeId}
         """
-        method, url, url_params, params = self._prepare_snapshot_add(
+        method, url, params, body_json = self._prepare_snapshot_add(
             parentNodeId=parentNodeId, snapshotNode=snapshotNode, snapshotData=snapshotData
         )
-        return self.send_request(method, url, params=params, url_params=url_params, auth=auth)
+        return self.send_request(method, url, body_json=body_json, params=params, auth=auth)
 
     def snapshot_update(self, *, snapshotNode, snapshotData, auth=None):
         """
@@ -320,8 +360,10 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
         API: POST /snapshot
         """
-        method, url, params = self._prepare_snapshot_update(snapshotNode=snapshotNode, snapshotData=snapshotData)
-        return self.send_request(method, url, params=params, auth=auth)
+        method, url, body_json = self._prepare_snapshot_update(
+            snapshotNode=snapshotNode, snapshotData=snapshotData
+        )
+        return self.send_request(method, url, body_json=body_json, auth=auth)
 
     def snapshots_get(self):
         """
@@ -374,12 +416,12 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
         API: PUT /composite-snapshot?parentNodeId={parentNodeId}
         """
-        method, url, url_params, params = self._prepare_composite_snapshot_add(
+        method, url, params, body_json = self._prepare_composite_snapshot_add(
             parentNodeId=parentNodeId,
             compositeSnapshotNode=compositeSnapshotNode,
             compositeSnapshotData=compositeSnapshotData,
         )
-        return self.send_request(method, url, url_params=url_params, params=params, auth=auth)
+        return self.send_request(method, url, params=params, body_json=body_json, auth=auth)
 
     def composite_snapshot_update(self, *, compositeSnapshotNode, compositeSnapshotData, auth=None):
         """
@@ -388,11 +430,11 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
         API: POST /composite-snapshot
         """
-        method, url, params = self._prepare_composite_snapshot_update(
+        method, url, body_json = self._prepare_composite_snapshot_update(
             compositeSnapshotNode=compositeSnapshotNode,
             compositeSnapshotData=compositeSnapshotData,
         )
-        return self.send_request(method, url, params=params, auth=auth)
+        return self.send_request(method, url, body_json=body_json, auth=auth)
 
     def composite_snapshot_consistency_check(self, uniqueNodeIds, *, auth=None):
         """
@@ -400,8 +442,8 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
         API: POST /composite-snapshot-consistency-check
         """
-        method, url, params = self._prepare_composite_snapshot_consistency_check(uniqueNodeIds=uniqueNodeIds)
-        return self.send_request(method, url, params=params, auth=auth)
+        method, url, body_json = self._prepare_composite_snapshot_consistency_check(uniqueNodeIds=uniqueNodeIds)
+        return self.send_request(method, url, body_json=body_json, auth=auth)
 
     # =============================================================================================
     #                     SNAPSHOT-RESTORE-CONTROLLER API METHODS
@@ -415,8 +457,8 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
         API: POST /restore/node
         """
-        method, url, url_params = self._prepare_restore_node(nodeId=nodeId)
-        return self.send_request(method, url, url_params=url_params, auth=auth)
+        method, url, params = self._prepare_restore_node(nodeId=nodeId)
+        return self.send_request(method, url, params=params, auth=auth)
 
     def restore_items(self, *, snapshotItems, auth=None):
         """
@@ -427,8 +469,8 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
         API: POST /restore/items
         """
-        method, url, params = self._prepare_restore_items(snapshotItems=snapshotItems)
-        return self.send_request(method, url, params=params, auth=auth)
+        method, url, body_json = self._prepare_restore_items(snapshotItems=snapshotItems)
+        return self.send_request(method, url, body_json=body_json, auth=auth)
 
     # =============================================================================================
     #                     COMPARISON-CONTROLLER API METHODS
@@ -442,10 +484,10 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
         API: GET /compare/{nodeId}
         """
-        method, url, url_params = self._prepare_compare(
+        method, url, params = self._prepare_compare(
             nodeId=nodeId, tolerance=tolerance, compareMode=compareMode, skipReadback=skipReadback
         )
-        return self.send_request(method, url, url_params=url_params)
+        return self.send_request(method, url, params=params)
 
     # =============================================================================================
     #                     FILTER-CONTROLLER API METHODS
@@ -457,8 +499,8 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
         API: PUT /filter
         """
-        method, url, params = self._prepare_filter_add(filter=filter)
-        return self.send_request(method, url, params=params, auth=auth)
+        method, url, body_json = self._prepare_filter_add(filter=filter)
+        return self.send_request(method, url, body_json=body_json, auth=auth)
 
     def filters_get(self):
         """
@@ -489,10 +531,10 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
         API: POST /move
         """
-        method, url, params, url_params = self._prepare_structure_move(
+        method, url, body_json, params = self._prepare_structure_move(
             nodeIds=nodeIds, newParentNodeId=newParentNodeId
         )
-        return self.send_request(method, url, params=params, url_params=url_params, auth=auth)
+        return self.send_request(method, url, body_json=body_json, params=params, auth=auth)
 
     def structure_copy(self, nodeIds, *, newParentNodeId, auth=None):
         """
@@ -501,10 +543,10 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
         API: POST /copy
         """
-        method, url, params, url_params = self._prepare_structure_copy(
+        method, url, body_json, params = self._prepare_structure_copy(
             nodeIds=nodeIds, newParentNodeId=newParentNodeId
         )
-        return self.send_request(method, url, params=params, url_params=url_params, auth=auth)
+        return self.send_request(method, url, body_json=body_json, params=params, auth=auth)
 
     def structure_path_get(self, uniqueNodeId):
         """
@@ -523,5 +565,5 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
         API: GET /path
         """
-        method, url, url_params = self._prepare_structure_path_nodes(path=path)
-        return self.send_request(method, url, url_params=url_params)
+        method, url, params = self._prepare_structure_path_nodes(path=path)
+        return self.send_request(method, url, params=params)
