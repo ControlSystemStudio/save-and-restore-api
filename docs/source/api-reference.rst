@@ -13,6 +13,10 @@ Synchronous Communication with Save-And-Restore Server
 
     SaveRestoreAPI
     SaveRestoreAPI.send_request
+    SaveRestoreAPI.open
+    SaveRestoreAPI.close
+    SaveRestoreAPI.__enter__
+    SaveRestoreAPI.__exit__
 
 Authentication
 **************

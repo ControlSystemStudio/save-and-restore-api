@@ -29,7 +29,7 @@ dependencies = [
 ]
 
 [project.scripts]
-save-and-restore-upload = "save_and_restore_api.tools.upload:main"
+save-and-restore = "save_and_restore_api.tools.upload:main"
 
 [project.urls]
 Homepage = "https://github.com/dmgav/save-and-restore-api"

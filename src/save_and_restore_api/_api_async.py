@@ -6,22 +6,27 @@ from ._api_threads import SaveRestoreAPI as _SaveRestoreAPI_Threads
 
 class SaveRestoreAPI(_SaveRestoreAPI_Base):
     def open(self):
+        # Reusing docstrings from the threaded version
         self._client = httpx.AsyncClient(base_url=self._base_url, timeout=self._timeout)
 
     async def close(self):
+        # Reusing docstrings from the threaded version
         await self._client.aclose()
         self._client = None
 
     async def __aenter__(self):
+        # Reusing docstrings from the threaded version
         self.open()
         return self
 
     async def __aexit__(self, exc_type, exc_value, traceback):
+        # Reusing docstrings from the threaded version
         await self.close()
 
     async def send_request(
         self, method, url, *, body_json=None, params=None, headers=None, data=None, timeout=None, auth=None
     ):
+        # Reusing docstrings from the threaded version
         try:
             client_response = None
             kwargs = self._prepare_request(
@@ -325,6 +330,11 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         method, url, params = self._prepare_structure_path_nodes(path=path)
         return await self.send_request(method, url, params=params)
 
+
+SaveRestoreAPI.open.__doc__ = _SaveRestoreAPI_Threads.open.__doc__
+SaveRestoreAPI.close.__doc__ = _SaveRestoreAPI_Threads.close.__doc__
+SaveRestoreAPI.__aenter__.__doc__ = _SaveRestoreAPI_Threads.__enter__.__doc__
+SaveRestoreAPI.__aexit__.__doc__ = _SaveRestoreAPI_Threads.__exit__.__doc__
 
 SaveRestoreAPI.send_request.__doc__ = _SaveRestoreAPI_Threads.send_request.__doc__
 

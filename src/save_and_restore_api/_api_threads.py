@@ -5,17 +5,78 @@ from ._api_base import _SaveRestoreAPI_Base
 
 class SaveRestoreAPI(_SaveRestoreAPI_Base):
     def open(self):
-        self._client = httpx.Client(base_url=self._base_url, timeout=self._timeout)
+        """
+        Open HTTP connection to the server. The function creates the HTTP client
+        that is used to send requests to the server.
+
+        Examples
+        --------
+
+        .. code-block:: python
+
+            from save_and_restore_api import SaveRestoreAPI
+
+            SR = SaveRestoreAPI(base_url="http://localhost:8080/save-restore")
+            SR.open()
+            info = SR.info_get()
+            print(f"info={info}")
+            SR.close()
+
+        Async version:
+
+        .. code-block:: python
+
+            from save_and_restore_api.aio import SaveRestoreAPI
+
+            SR = SaveRestoreAPI(base_url="http://localhost:8080/save-restore")
+            await SR.open()
+            info = await SR.info_get()
+            print(f"info={info}")
+            await SR.close()
+        """
+        if self._client is not None:
+            self._client = httpx.Client(base_url=self._base_url, timeout=self._timeout)
 
     def close(self):
-        self._client.close()
-        self._client = None
+        """
+        Close HTTP connection to the server. The function closes the HTTP client.
+        """
+        if self._client is not None:
+            self._client.close()
+            self._client = None
 
     def __enter__(self):
+        """
+        Support for the context manager protocol.
+
+        Examples
+        --------
+
+        .. code-block:: python
+
+            from save_and_restore_api import SaveRestoreAPI
+
+            with SaveRestoreAPI(base_url="http://localhost:8080/save-restore") as SR:
+                info = SR.info_get()
+                print(f"info={info}")
+
+        Async version:
+
+        .. code-block:: python
+
+            from save_and_restore_api.aio import SaveRestoreAPI
+
+            async with SaveRestoreAPI(base_url="http://localhost:8080/save-restore") as SR:
+                info = await SR.info_get()
+                print(f"info={info}")
+        """
         self.open()
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
+        """
+        Support for the context manager protocol.
+        """
         self.close()
 
     def send_request(
@@ -54,10 +115,12 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
         Raises
         ------
-        SaveRestoreAPI.RequestParameterError, SaveRestoreAPI.RequestTimeoutError,
-        SaveRestoreAPI.RequestFailedError, SaveRestoreAPI.HTTPRequestError,
-        SaveRestoreAPI.HTTPClientError, SaveRestoreAPI.HTTPServerError
-
+        RequestParameterError
+            Invalid parameter value or type
+        RequestTimeoutError
+            Communication timeout error
+        HTTPRequestError, HTTPClientError, HTTPServerError
+            Error while processing the request or communicating with the server.
         """
         try:
             client_response = None

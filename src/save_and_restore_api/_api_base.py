@@ -1,6 +1,5 @@
 # import getpass
 import json
-from collections.abc import Mapping
 from urllib.parse import quote
 
 import httpx
@@ -25,27 +24,16 @@ class RequestTimeoutError(TimeoutError):
         super().__init__(msg)
 
 
-class RequestFailedError(Exception):
-    def __init__(self, request, response):
-        msg = response.get("msg", "") if isinstance(response, Mapping) else str(response)
-        msg = msg or "(no error message)"
-        msg = f"Request failed: {msg}"
-        self.request = request
-        self.response = response
-        super().__init__(msg)
-
-
 class _SaveRestoreAPI_Base:
     RequestParameterError = RequestParameterError
     RequestTimeoutError = RequestTimeoutError
-    RequestFailedError = RequestFailedError
     HTTPRequestError = HTTPRequestError
     HTTPClientError = HTTPClientError
     HTTPServerError = HTTPServerError
 
     ROOT_NODE_UID = "44bef5de-e8e6-4014-af37-b8f6c8a939a2"
 
-    def __init__(self, *, base_url, timeout, request_fail_exceptions=True):
+    def __init__(self, *, base_url, timeout=5.0):
         self._base_url = base_url
         self._timeout = timeout
         self._client = None
@@ -55,15 +43,67 @@ class _SaveRestoreAPI_Base:
     def auth_gen(username, password):
         """
         Generate and return httpx.BasicAuth object based on username and password.
-        The object can be passed as ``auth`` parameter in API calls.
+        The object can be passed as a value of  ``auth`` parameter in API calls.
+        Explicitly passing the authentication object may be useful if requests
+        are made on behalf of multiple users in the same session. If a single user
+        is authenticated per session, then use ``auth_set()`` to set authentication
+        once.
+
+        Parameters
+        ----------
+        username : str
+            Username.
+        password : str
+            Password.
+
+        Returns
+        -------
+        httpx.BasicAuth
+            Basic authentication object.
+
+        Examples
+        --------
+
+        .. code-block:: python
+
+            from save_and_restore_api import SaveRestoreAPI
+
+            auth = SaveRestoreAPI.auth_gen(username="user", password="userPass")
         """
         return httpx.BasicAuth(username=username, password=password)
 
     def auth_set(self, *, username, password):
         """
-        Configure authentication for the session based on username and password.
-        If the authentication is configured, there is no need to pass the authentication
-        object with each API call.
+        Set authentication for the session. Once the authentication is configured, the
+        authentication object is automatically passed with each API call. Calling
+        this function again overwrites the previous authentication. Use ``auth_clear()``
+        function to clear authentication.
+
+        Parameters
+        ----------
+        username : str
+            Username.
+        password : str
+            Password.
+
+        Returns
+        -------
+        None
+
+        Examples
+        --------
+
+        .. code-block:: python
+
+            from save_and_restore_api import SaveRestoreAPI
+
+            SR = SaveRestoreAPI(base_url="http://localhost:8080/save-restore")
+            SR.auth_set(username="user", password="userPass")
+            # ...........
+            SR.auth_set(username="admin", password="adminPass")
+            # ...........
+            SR.auth_clear()
+
         """
         self._auth = self.auth_gen(username=username, password=password)
 
