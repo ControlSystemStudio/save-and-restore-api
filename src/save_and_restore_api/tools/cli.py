@@ -4,6 +4,7 @@ import logging
 import os
 import pprint
 import sys
+import time
 from dataclasses import dataclass
 
 import save_and_restore_api
@@ -14,42 +15,16 @@ version = save_and_restore_api.__version__
 logger = logging.getLogger("save-and-restore-api")
 
 EXIT_CODE_SUCCESS = 0
-EXIT_CODE_CLI_PARAMETER_ERROR = -1
-EXIT_CODE_OPERATION_FAILED = -2
-
-
-# BASE_URL = "http://epics-services-hxn.nsls2.bnl.local:20381/save-restore"
-# timeout = 5
-# file_name = "auto_settings.sav"
-
-
-def add_to_pv_list(pv_list, *, pv_name):
-    pv_list.append({"pvName": pv_name})
-
-
-def load_pvs_from_autosave_file(file_name):
-    pv_names = []
-    with open(file_name) as f:
-        for line in f:
-            ln = line.strip()
-            if ln.startswith("#") or ln.startswith("<"):
-                continue
-            pv_name = ln.split(" ")[0]
-            if pv_name:
-                pv_names.append(pv_name)
-    return pv_names
-
-
-def split_config_name(config_name):
-    if not config_name.startswith("/"):
-        config_name = "/" + config_name
-    _ = config_name.split("/")
-    folders, name = _[1:-1], _[-1]
-    return folders, name
+EXIT_CODE_CLI_PARAMETER_ERROR = 1
+EXIT_CODE_OPERATION_FAILED = 2
 
 
 @dataclass
 class Settings:
+    """
+    Data structure for storing command line parameters.
+    """
+
     command: str = None
     operation: str = None
     base_url: str = None
@@ -93,7 +68,16 @@ def setup_loggers(*, log_level, name="save-and-restore-api"):
 
 def parse_args(settings):
     """
-    Parse command line arguments. Results are saved in the ``settings`` object.
+    Perform full parsing of the command line arguments. Results are saved in the ``settings`` object.
+
+    Parameters
+    ----------
+    settings: Settings
+        Settings object where command line parameters are saved.
+
+    Returns
+    -------
+    None
     """
 
     def formatter(prog):
@@ -308,7 +292,7 @@ def parse_args(settings):
         args = parser.parse_args()
 
         settings.base_url = args.base_url or os.environ.get("SAVE_AND_RESTORE_API_BASE_URL", None)
-        settings.create_folders = args.create_folders
+        settings.create_folders = args.create_folders == "ON"
         settings.user_name = args.user_name or os.environ.get("SAVE_AND_RESTORE_API_USER_NAME", None)
         settings.user_password = os.environ.get("SAVE_AND_RESTORE_API_USER_PASSWORD", None)
         settings.verbose_output = args.verbose
@@ -385,7 +369,17 @@ def parse_args(settings):
 
 def print_settings(settings):
     """
-    Print settings for user convenience.
+    Print settings on the terminal in human-readable form. Only setting relevant fo
+    the selected operation are printed.
+
+    Parameters
+    ----------
+    settings: Settings
+        Settings object with command line parameters.
+
+    Returns
+    -------
+    None
     """
     operation = settings.command
     if settings.operation:
@@ -406,6 +400,21 @@ def print_settings(settings):
 
 
 def set_username_password(settings):
+    """
+    Interactively ask for user name and password if necessary. If both 'user_name'
+    and 'user_password' are not None, then the function does nothing. If only
+    'user_name' is specified, the function prints the user name and asks for the password.
+    If both 'user_name' and 'user_password' are None, the function asks for both.
+
+    Parameters
+    ----------
+    settings: Settings
+        Settings object with command line parameters.
+
+    Returns
+    -------
+    None
+    """
     user_name, password = settings.user_name, settings.user_password
     user_name_interactive = False
     if not isinstance(user_name, str) or not user_name:
@@ -423,39 +432,66 @@ def set_username_password(settings):
 
 def process_login_command(settings):
     """
-    Process the LOGIN command.
+    Process the LOGIN command, which checks of user name and password are valid.
+    Raises an exception if the operation fails.
+
+    Parameters
+    ----------
+    settings: Settings
+        Settings object with command line parameters.
+
+    Returns
+    -------
+    None
     """
-    success = False
+    # Interactively ask for user name and password if necessary
     set_username_password(settings)
 
     with SaveRestoreAPI(base_url=settings.base_url, timeout=settings.timeout) as SR:
-        # SR.auth_set(username=settings.user_name, password=settings.user_password)
         try:
             logger.debug("Sending 'login' request ...")
             response = SR.login(username=settings.user_name, password=settings.user_password)
             logger.debug(f"Response received: {response}")
-            print(f"Login successful. Response: \n{pprint.pformat(response)}")
-            success = True
-        except Exception as ex:
-            logger.error(f"Login failed: {ex}")
-            if settings.verbose_output:
-                logger.exception(ex)
 
-    return success
+            print(f"Login successful. Response: \n{pprint.pformat(response)}")
+        except Exception as ex:
+            raise RuntimeError(f"Login failed: {ex}") from ex
 
 
 def check_node_exists(SR, config_name, *, node_type="CONFIGURATION"):
     """
     Returns uniqueId of the node if 'config_name' points to an existing configuration node.
     Otherwise returns None.
+
+    Parameters
+    ----------
+    SR : SaveRestoreAPI
+        Current configured instance of SaveRestoreAPI.
+    config_name: str
+        Full config name including the path.
+    node_type: str
+        Type of the node to be checked.
+
+    Returns
+    -------
+    str or None
+        Unique ID of the node if it exists, otherwise None.
     """
     if node_type not in ("CONFIGURATION", "FOLDER"):
         raise ValueError(f"Unsupported node type: {node_type}")
+
     try:
+        logger.debug(f"Sending 'structure_path_nodes' request for '{config_name}' ...")
         nodes = SR.structure_path_nodes(config_name)
+        logger.debug(f"Response received: {nodes}")
+
     except SR.HTTPClientError:
+        logger.debug(f"Node '{config_name}' does not exist.")
         nodes = []
+
     config_nodes = [_ for _ in nodes if _["nodeType"] == node_type]
+
+    logger.debug(f"UIDs of the discovered config nodes: {config_nodes}")
     if config_nodes:
         return config_nodes[0]["uniqueId"]
     else:
@@ -464,22 +500,53 @@ def check_node_exists(SR, config_name, *, node_type="CONFIGURATION"):
 
 def split_node_path(node_path):
     """
-    Split node path into the list of folders and the node name.
+    Split full node path (e.g. ``/detectors/imaging/eiger_config``)
+    into the list of folders (``["detectors", "imaging"]``) and the config name
+    (``"eiger_config"``).
+
+    Parameters
+    ----------
+    node_path: str
+        Full config name including the path.
+
+    Returns
+    -------
+    list(str)
+        List of folders in the path.
+    str
+        Config name.
     """
-    if not node_path.startswith("/"):
-        node_path = "/" + node_path
+    node_path = node_path.strip()
+    node_path = node_path.strip("/")
     _ = node_path.split("/")
-    folders, name = _[1:-1], _[-1]
+    folders, name = _[0:-1], _[-1]
     return folders, name
 
 
-def create_missing_folders(SR, config_name, *, create_folders=False):
+def create_missing_folders(SR, folder_name, *, create_folders=False):
     """
-    Create folders if they do not exist. Folders are created only if 'create_folders' is True.
-    Return node_uid for the folder node, or None if the operation fails.
+    Check if the folder ``folder_name`` exists. Create the folder if it it does not exist.
+    Folders are created only if 'create_folders' is True. Returns ``node_uid`` for the existing
+    or created folder node, or *None* if the operation fails.
+
+    Parameters
+    ----------
+    SR : SaveRestoreAPI
+        Current configured instance of SaveRestoreAPI.
+    folder_name: str
+        Full name of the folder node including the path.
+    create_folders: bool
+        If True, create missing folders if required. If False, the function only checks
+        if the folder exists.
+
+    Returns
+    -------
+    str or None
+        Unique ID of the existing or created folder node, or None if the operation fails.
     """
-    folders, name = split_node_path(config_name)
-    node_uid = check_node_exists(SR, config_name, node_type="FOLDER")
+    folders = folder_name.strip("/").split("/")
+
+    node_uid = check_node_exists(SR, folder_name, node_type="FOLDER")
     if create_folders and not node_uid:
         path, parent_uid = "", SR.ROOT_NODE_UID
         for f in folders:
@@ -489,6 +556,7 @@ def create_missing_folders(SR, config_name, *, create_folders=False):
                 response = SR.node_add(parent_uid, name=f, nodeType="FOLDER")
                 node_uid = response["uniqueId"]
             parent_uid = node_uid
+
     return node_uid
 
 
@@ -526,74 +594,105 @@ def load_pvs_from_file(file_name, *, file_format):
 
 
 def process_config_command(settings):
-    success = False
+    """
+    Process the CONFIG command.
 
+    Parameters
+    ----------
+    settings: Settings
+        Settings object with command line parameters.
+
+    Returns
+    -------
+    None
+    """
     if settings.file_name and not os.path.isfile(settings.file_name):
-        print(f"Input file '{settings.file_name}' does not exist.")
-        return False
+        raise ValueError(f"Input file {settings.file_name!r} does not exist.")
 
+    # Interactively ask for user name and password if necessary
     if settings.operation != "GET":
         set_username_password(settings)
 
     with SaveRestoreAPI(base_url=settings.base_url, timeout=settings.timeout) as SR:
         if settings.operation != "GET":
+            logger.debug("Configuring authentication parameters ...")
             SR.auth_set(username=settings.user_name, password=settings.user_password)
-        try:
-            node_uid = check_node_exists(SR, settings.config_name, node_type="CONFIGURATION")
-            config_node = SR.node_get(node_uid) if node_uid else None
-            config_data = SR.config_get(node_uid) if node_uid else None
 
-            if settings.operation == "GET":
-                if node_uid is None:
-                    print(f"Config node '{settings.config_name}' does not exist.")
+        logger.debug(f"Checking if config node {settings.config_name!r} exists ...")
+        node_uid = check_node_exists(SR, settings.config_name, node_type="CONFIGURATION")
+        logger.debug(f"Config node UID: {node_uid}")
+
+        logger.debug(f"Loading information for the node: {node_uid} ...")
+        config_node = SR.node_get(node_uid) if node_uid else None
+
+        logger.debug(f"Loading data for the node: {node_uid} ...")
+        config_data = SR.config_get(node_uid) if node_uid else None
+
+        if settings.operation == "GET":
+            logger.debug("Executing 'CONFIG GET' operation ...")
+            if node_uid is None:
+                raise RuntimeError(f"Config node {settings.config_name!r} does not exist.")
+            else:
+                print(f"Config node:\n{pprint.pformat(config_node)}")
+                if settings.show_data:
+                    print(f"Config data:\n{pprint.pformat(config_data)}")
+
+        elif settings.operation == "ADD":
+            logger.debug("Executing 'CONFIG ADD' operation ...")
+            if node_uid:
+                raise RuntimeError(f"Config node {settings.config_name!r} already exists.")
+
+            else:
+                logger.debug(f"Loading PV names from file {settings.file_name!r} ...")
+                pv_list = load_pvs_from_file(settings.file_name, file_format=settings.file_format)
+
+                print(f"Number of PVs loaded from file: {len(pv_list)}")
+
+                _folders, _config_name = split_node_path(settings.config_name)
+                _folder_name = "/" + "/".join(_folders)
+
+                if not _config_name:
+                    raise ValueError(f"Config name is an empty string: {settings.config_name!r}")
+
+                logger.debug(f"Creating the folder {_folder_name!r} ...")
+                parent_uid = create_missing_folders(SR, _folder_name, create_folders=settings.create_folders)
+                if parent_uid is None:
+                    raise RuntimeError(f"The folder {_folder_name!r} does not exist.")
                 else:
-                    print(f"Config node:\n{pprint.pformat(config_node)}")
-                    if settings.show_data:
-                        print(f"Config data:\n{pprint.pformat(config_data)}")
-                    success = True
-            elif settings.operation == "ADD":
-                if node_uid:
-                    print(f"Config node '{settings.config_name}' already exists.")
-                else:
-                    pv_list = load_pvs_from_file(settings.file_name, file_format=settings.file_format)
-                    # do something if pv_list is empty !!!
-                    parent_uid = create_missing_folders(
-                        SR, settings.config_name, create_folders=settings.create_folders
+                    logger.debug(f"Adding config node: parent UID: {parent_uid}, name: {_config_name!r}...")
+                    response = SR.config_add(
+                        parent_uid,
+                        configurationNode={"name": _config_name},
+                        configurationData={"pvList": pv_list},
                     )
-                    if parent_uid is None:
-                        print(f"The folder '{settings.config_name}' does not exist.")
-                    else:
-                        _, name = split_node_path(settings.config_name)
-                        response = SR.config_add(
-                            parent_uid,
-                            configurationNode={"name": name},
-                            configurationData={"pvList": []},
-                        )
-                        print(f"Config node created:\n{pprint.pformat(response['configurationNode'])}")
-                        if settings.show_data:
-                            print(f"Config data:\n{pprint.pformat(response['configurationData'])}")
-                        success = True
-            elif settings.operation == "UPDATE":
-                if not node_uid:
-                    print(f"Config node '{settings.config_name}' does not exist.")
-                else:
-                    pv_list = load_pvs_from_file(settings.file_name, file_format=settings.file_format)
-                    # do something if pv_list is empty !!!
-                    config_data["pvList"] = pv_list
-                    response = SR.config_update(
-                        configurationNode=config_node,
-                        configurationData=config_data,
-                    )
-                    print(f"Config node modified:\n{pprint.pformat(response['configurationNode'])}")
+
+                    print(f"Config node created:\n{pprint.pformat(response['configurationNode'])}")
                     if settings.show_data:
                         print(f"Config data:\n{pprint.pformat(response['configurationData'])}")
-                    success = True
 
-        except Exception as ex:
-            logger.error(f"Login failed: {ex}")
-            if settings.verbose_output:
-                logger.exception(ex)
-    return success
+        elif settings.operation == "UPDATE":
+            logger.debug("Executing 'CONFIG UPDATE' operation ...")
+            if not node_uid:
+                raise RuntimeError(f"Config node {settings.config_name!r} does not exist.")
+
+            else:
+                logger.debug(f"Loading PV names from file {settings.file_name!r} ...")
+                pv_list = load_pvs_from_file(settings.file_name, file_format=settings.file_format)
+
+                print(f"Number of PVs loaded from file: {len(pv_list)}")
+
+                logger.debug(
+                    f"Updating config node: node UID: {config_node['uniqueId']}, name: {config_node['name']!r} ..."
+                )
+                config_data["pvList"] = pv_list
+                response = SR.config_update(
+                    configurationNode=config_node,
+                    configurationData=config_data,
+                )
+
+                print(f"Updated config node:\n{pprint.pformat(response['configurationNode'])}")
+                if settings.show_data:
+                    print(f"Updated config data:\n{pprint.pformat(response['configurationData'])}")
 
 
 def main():
@@ -609,13 +708,22 @@ def main():
         name="save-and-restore-api",
     )
 
-    success = False
-    if settings.command == "LOGIN":
-        success = process_login_command(settings)
-    elif settings.command == "CONFIG":
-        success = process_config_command(settings)
-    else:
-        logger.error(f"Unsupported command: {settings.command}")
+    logger.debug("Execution started.")
+    time_start = time.time()
+    try:
+        if settings.command == "LOGIN":
+            process_login_command(settings)
+        elif settings.command == "CONFIG":
+            process_config_command(settings)
+        else:
+            raise ValueError(f"Unsupported command: {settings.command}")
 
-    if not success:
+    except Exception as ex:
+        logger.error(f"\nOperation failed: {ex}")
+        if settings.verbose_output:
+            logger.exception(ex)
         exit(EXIT_CODE_OPERATION_FAILED)
+
+    else:
+        logger.debug("Operation completed.")
+    logger.debug(f"Execution time: {time.time() - time_start:.3f} s.")
