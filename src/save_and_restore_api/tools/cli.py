@@ -87,20 +87,27 @@ def parse_args(settings):
     parser = argparse.ArgumentParser(
         description="save-and-restore: CLI tool for operations on Save-and-Restore nodes.\n"
         f"save-and-restore-api version {version}\n\n"
-        "The tool connects to the save-and-restore service. Host URL specified as the '--base-url'\n"
-        "parameter. User name (--user-name) is used for authentication with the service.\n"
-        "Currently supported operations:\n"
+        "The tool connects to the save-and-restore service to perform the selected operation. \n"
+        "The following operations are currently supported:\n"
+        "    LOGIN: check user login credentials.\n"
         "    CONFIG GET: read an existing config node.\n"
-        "    CONFIG ADD: create a new config node. The config node is created/updated based\n"
+        "    CONFIG ADD: create a new config node. The config node is created based\n"
         "        on the list of PVs loaded from file. The file name and format are specified\n"
         "        using the '--file-name' ('-f') and '--file-format' parameters.\n"
         "    CONFIG UPDATE: update an existing config node.\n"
         "\n"
+        "Host URL specified as the '--base-url' parameter. User authenticates by the user name\n"
+        "(--user-name) and the password. The user name and the password can be passed using\n"
+        "the environment variables (see below) or entered interactively.\n"
+        "\n"
         "Supported environment variables:\n"
-        "    SAVE_AND_RESTORE_API_BASE_URL: alternative way to specify the host URL.\n"
-        "    SAVE_AND_RESTORE_API_USER_NAME: alternative way to specify the user name.\n"
+        "    SAVE_AND_RESTORE_API_BASE_URL: host URL (see '--base-url' parameter);\n"
+        "    SAVE_AND_RESTORE_API_USER_NAME: user name (see '--user-name' parameter);\n"
         "    SAVE_AND_RESTORE_API_USER_PASSWORD: user password (use with caution).\n"
         "CLI parameters override the respective environment variables.\n"
+        "\n"
+        "The program returns 0 if the operation is successful. Non-zero return codes\n"
+        "indicate errors.\n"
         "\n"
         "Examples:\n"
         "\n"
@@ -185,7 +192,6 @@ def parse_args(settings):
 
     parser_config_get.add_argument(
         "--config-name",
-        "-c",
         dest="config_name",
         type=str,
         default=None,
@@ -311,7 +317,7 @@ def parse_args(settings):
                 settings.show_data = args.show_data == "ON"
                 success = True
                 if not settings.config_name:
-                    logger.error("Required '--config-name' ('-c') parameter is not specified")
+                    logger.error("Required '--config-name' parameter is not specified")
                     success = False
                 if not success:
                     parser_config_get.print_help()
@@ -325,7 +331,7 @@ def parse_args(settings):
                 settings.show_data = args.show_data == "ON"
                 success = True
                 if not settings.config_name:
-                    logger.error("Required '--config-name' ('-c') parameter is not specified")
+                    logger.error("Required '--config-name' parameter is not specified")
                     success = False
                 if not settings.file_name:
                     logger.error("Required '--file-name' ('-f') parameter is not specified")
@@ -341,7 +347,7 @@ def parse_args(settings):
                 settings.show_data = args.show_data == "ON"
                 success = True
                 if not settings.config_name:
-                    logger.error("Required '--config-name' ('-c') parameter is not specified")
+                    logger.error("Required '--config-name' parameter is not specified")
                     success = False
                 if not settings.file_name:
                     logger.error("Required '--file-name' ('-f') parameter is not specified")
