@@ -34,7 +34,7 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
             print(f"info={info}")
             await SR.close()
         """
-        if self._client is not None:
+        if self._client is None:
             self._client = httpx.Client(base_url=self._base_url, timeout=self._timeout)
 
     def close(self):

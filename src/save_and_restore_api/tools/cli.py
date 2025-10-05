@@ -1,33 +1,26 @@
 import argparse
-
-# import getpass
+import getpass
 import logging
 import os
+import pprint
+import sys
 from dataclasses import dataclass
 
-# import pprint
 import save_and_restore_api
+from save_and_restore_api import SaveRestoreAPI
 
 version = save_and_restore_api.__version__
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("save-and-restore-api")
 
 EXIT_CODE_SUCCESS = 0
 EXIT_CODE_CLI_PARAMETER_ERROR = -1
+EXIT_CODE_OPERATION_FAILED = -2
 
-BASE_URL = "http://epics-services-hxn.nsls2.bnl.local:20381/save-restore"
-timeout = 2
-file_name = "auto_settings.sav"
 
-# def set_username_password(self, username=None, password=None):
-#     if not isinstance(username, str):
-#         print("Username: ", end="")
-#         username = input()
-#     if not isinstance(password, str):
-#         password = getpass.getpass()
-
-#     self._username = username
-#     self._password = password
+# BASE_URL = "http://epics-services-hxn.nsls2.bnl.local:20381/save-restore"
+# timeout = 5
+# file_name = "auto_settings.sav"
 
 
 def add_to_pv_list(pv_list, *, pv_name):
@@ -66,6 +59,36 @@ class Settings:
     config_name: str = None
     file_name: str = None
     file_format: str = None
+    timeout: float = 5
+
+
+def setup_loggers(*, log_level, name="save-and-restore-api"):
+    """
+    Configure loggers.
+
+    Parameters
+    ----------
+    name: str
+        Module name (typically ``__name__``)
+    log_level
+        Logging level (e.g. ``logging.INFO``, ``"INFO"`` or ``20``)
+    """
+    log_stream_handler = logging.StreamHandler(sys.stdout)
+    log_stream_handler.setLevel(log_level)
+    if (
+        (log_level == logging.DEBUG)
+        or (log_level == "DEBUG")
+        or (isinstance(log_level, int) and (log_level <= 10))
+    ):
+        log_stream_format = "[%(levelname)1.1s %(asctime)s.%(msecs)03d %(name)s %(module)s:%(lineno)d] %(message)s"
+    else:
+        log_stream_format = "[%(levelname)1.1s %(asctime)s %(name)s] %(message)s"
+
+    log_stream_handler.setFormatter(logging.Formatter(fmt=log_stream_format))
+    logging.getLogger(name).handlers.clear()
+    logging.getLogger(name).addHandler(log_stream_handler)
+    logging.getLogger(name).setLevel(log_level)
+    logging.getLogger(name).propagate = False
 
 
 def parse_args(settings):
@@ -204,7 +227,6 @@ def parse_args(settings):
 
     parser_config_add.add_argument(
         "--config-name",
-        "-c",
         dest="config_name",
         type=str,
         default=None,
@@ -245,7 +267,6 @@ def parse_args(settings):
 
     parser_config_update.add_argument(
         "--config-name",
-        "-c",
         dest="config_name",
         type=str,
         default=None,
@@ -300,7 +321,19 @@ def parse_args(settings):
         success = False
         if args.command == "CONFIG":
             settings.command = args.command
-            if args.operation == "ADD":
+            if args.operation == "GET":
+                settings.operation = args.operation
+                settings.config_name = args.config_name
+                settings.show_data = args.show_data == "ON"
+                success = True
+                if not settings.config_name:
+                    logger.error("Required '--config-name' ('-c') parameter is not specified")
+                    success = False
+                if not success:
+                    parser_config_get.print_help()
+                    raise ExitOnError()
+
+            elif args.operation == "ADD":
                 settings.operation = args.operation
                 settings.config_name = args.config_name
                 settings.file_name = args.file_name
@@ -343,6 +376,9 @@ def parse_args(settings):
             parser.print_help()
             raise ExitOnError()
 
+        if settings.file_name:
+            settings.file_name = os.path.abspath(os.path.expanduser(settings.file_name))
+
     except ExitOnError:
         exit(EXIT_CODE_CLI_PARAMETER_ERROR)
 
@@ -369,6 +405,197 @@ def print_settings(settings):
     print("")
 
 
+def set_username_password(settings):
+    user_name, password = settings.user_name, settings.user_password
+    user_name_interactive = False
+    if not isinstance(user_name, str) or not user_name:
+        user_name_interactive = True
+        print("Username: ", end="")
+        user_name = input()
+    if not isinstance(password, str):
+        if not user_name_interactive:
+            print(f"Username: {user_name}")
+        password = getpass.getpass()
+    settings.user_name = user_name
+    settings.user_password = password
+    print("")
+
+
+def process_login_command(settings):
+    """
+    Process the LOGIN command.
+    """
+    success = False
+    set_username_password(settings)
+
+    with SaveRestoreAPI(base_url=settings.base_url, timeout=settings.timeout) as SR:
+        # SR.auth_set(username=settings.user_name, password=settings.user_password)
+        try:
+            logger.debug("Sending 'login' request ...")
+            response = SR.login(username=settings.user_name, password=settings.user_password)
+            logger.debug(f"Response received: {response}")
+            print(f"Login successful. Response: \n{pprint.pformat(response)}")
+            success = True
+        except Exception as ex:
+            logger.error(f"Login failed: {ex}")
+            if settings.verbose_output:
+                logger.exception(ex)
+
+    return success
+
+
+def check_node_exists(SR, config_name, *, node_type="CONFIGURATION"):
+    """
+    Returns uniqueId of the node if 'config_name' points to an existing configuration node.
+    Otherwise returns None.
+    """
+    if node_type not in ("CONFIGURATION", "FOLDER"):
+        raise ValueError(f"Unsupported node type: {node_type}")
+    try:
+        nodes = SR.structure_path_nodes(config_name)
+    except SR.HTTPClientError:
+        nodes = []
+    config_nodes = [_ for _ in nodes if _["nodeType"] == node_type]
+    if config_nodes:
+        return config_nodes[0]["uniqueId"]
+    else:
+        return None
+
+
+def split_node_path(node_path):
+    """
+    Split node path into the list of folders and the node name.
+    """
+    if not node_path.startswith("/"):
+        node_path = "/" + node_path
+    _ = node_path.split("/")
+    folders, name = _[1:-1], _[-1]
+    return folders, name
+
+
+def create_missing_folders(SR, config_name, *, create_folders=False):
+    """
+    Create folders if they do not exist. Folders are created only if 'create_folders' is True.
+    Return node_uid for the folder node, or None if the operation fails.
+    """
+    folders, name = split_node_path(config_name)
+    node_uid = check_node_exists(SR, config_name, node_type="FOLDER")
+    if create_folders and not node_uid:
+        path, parent_uid = "", SR.ROOT_NODE_UID
+        for f in folders:
+            path += f"/{f}"
+            node_uid = check_node_exists(SR, path, node_type="FOLDER")
+            if not node_uid:
+                response = SR.node_add(parent_uid, name=f, nodeType="FOLDER")
+                node_uid = response["uniqueId"]
+            parent_uid = node_uid
+    return node_uid
+
+
+def load_pvs_from_file(file_name, *, file_format):
+    """
+    Load PV names from file.
+
+    Parameters
+    ----------
+    file_name: str
+        Name of the file containing PV names.
+    file_format: str
+        Format of the file. Supported formats: "autosave".
+
+    Returns
+    -------
+    list(str)
+        List of PV names loaded from file.
+    """
+    pv_names = []
+    if file_format == "autosave":
+        with open(file_name) as f:
+            for line in f:
+                ll = line.strip()
+                if ll.startswith("#") or ll.startswith("<"):
+                    continue
+                pv_name = ll.split(" ")[0]
+                if pv_name:
+                    pv_names.append(pv_name)
+        # Convert PV list to the format accepted by the API
+        pv_names = [{"pvName": _} for _ in pv_names]
+    else:
+        raise ValueError(f"Unsupported file format: {file_format}.")
+    return pv_names
+
+
+def process_config_command(settings):
+    success = False
+
+    if settings.file_name and not os.path.isfile(settings.file_name):
+        print(f"Input file '{settings.file_name}' does not exist.")
+        return False
+
+    if settings.operation != "GET":
+        set_username_password(settings)
+
+    with SaveRestoreAPI(base_url=settings.base_url, timeout=settings.timeout) as SR:
+        if settings.operation != "GET":
+            SR.auth_set(username=settings.user_name, password=settings.user_password)
+        try:
+            node_uid = check_node_exists(SR, settings.config_name, node_type="CONFIGURATION")
+            config_node = SR.node_get(node_uid) if node_uid else None
+            config_data = SR.config_get(node_uid) if node_uid else None
+
+            if settings.operation == "GET":
+                if node_uid is None:
+                    print(f"Config node '{settings.config_name}' does not exist.")
+                else:
+                    print(f"Config node:\n{pprint.pformat(config_node)}")
+                    if settings.show_data:
+                        print(f"Config data:\n{pprint.pformat(config_data)}")
+                    success = True
+            elif settings.operation == "ADD":
+                if node_uid:
+                    print(f"Config node '{settings.config_name}' already exists.")
+                else:
+                    pv_list = load_pvs_from_file(settings.file_name, file_format=settings.file_format)
+                    # do something if pv_list is empty !!!
+                    parent_uid = create_missing_folders(
+                        SR, settings.config_name, create_folders=settings.create_folders
+                    )
+                    if parent_uid is None:
+                        print(f"The folder '{settings.config_name}' does not exist.")
+                    else:
+                        _, name = split_node_path(settings.config_name)
+                        response = SR.config_add(
+                            parent_uid,
+                            configurationNode={"name": name},
+                            configurationData={"pvList": []},
+                        )
+                        print(f"Config node created:\n{pprint.pformat(response['configurationNode'])}")
+                        if settings.show_data:
+                            print(f"Config data:\n{pprint.pformat(response['configurationData'])}")
+                        success = True
+            elif settings.operation == "UPDATE":
+                if not node_uid:
+                    print(f"Config node '{settings.config_name}' does not exist.")
+                else:
+                    pv_list = load_pvs_from_file(settings.file_name, file_format=settings.file_format)
+                    # do something if pv_list is empty !!!
+                    config_data["pvList"] = pv_list
+                    response = SR.config_update(
+                        configurationNode=config_node,
+                        configurationData=config_data,
+                    )
+                    print(f"Config node modified:\n{pprint.pformat(response['configurationNode'])}")
+                    if settings.show_data:
+                        print(f"Config data:\n{pprint.pformat(response['configurationData'])}")
+                    success = True
+
+        except Exception as ex:
+            logger.error(f"Login failed: {ex}")
+            if settings.verbose_output:
+                logger.exception(ex)
+    return success
+
+
 def main():
     logging.basicConfig(level=logging.WARNING)
     logging.getLogger("save-and-restore-api").setLevel("INFO")
@@ -377,53 +604,18 @@ def main():
     parse_args(settings)
     print_settings(settings)
 
-    # try:
-    #     if args.file_name is None:
-    #         raise ValueError("Required '--file-name' ('-f') parameter is not specified")
+    setup_loggers(
+        log_level=logging.DEBUG if settings.verbose_output else logging.INFO,
+        name="save-and-restore-api",
+    )
 
-    #     if args.config_name is None:
-    #         raise ValueError("Required '--config-name' ('-c') parameter is not specified")
+    success = False
+    if settings.command == "LOGIN":
+        success = process_login_command(settings)
+    elif settings.command == "CONFIG":
+        success = process_config_command(settings)
+    else:
+        logger.error(f"Unsupported command: {settings.command}")
 
-    #     file_name = os.path.abspath(os.path.expanduser(file_name))
-
-    #     print(f"file_name={file_name}")
-    #     print(f"config_name={config_name}")
-    #     print(f"create_folders={create_folders}")
-    #     print(f"update={config_update}")
-
-    #     if not os.path.isfile(file_name):
-    #         raise ValueError(f"Input file '{file_name}' does not exist")
-
-    #     folders, name = split_config_name(config_name)
-    #     print(f"folders={folders}, name={name}")
-
-    # except Exception as ex:
-    #     logger.error(f"Failed: {ex}")
-
-    # SR = SaveRestoreAPI(base_url=BASE_URL, timeout=timeout)
-    # try:
-    #     pv_names = load_pvs_from_autosave_file(file_name)
-
-    #     SR.set_username_password()
-    #     SR.open()
-    #     SR.login()
-
-    #     data = SR.node_get(SR.ROOT_NODE_UID)
-    #     print(f"data=\n{pprint.pformat(data)}")
-    #     data = SR.node_get_children(data["uniqueId"])
-    #     print(f"data=\n{pprint.pformat(data)}")
-    #     parent_node_uid = data[0]["uniqueId"]
-    #     name = "test5"
-    #     pv_list = []
-    #     for pv_name in pv_names:
-    #         add_to_pv_list(pv_list, pv_name=pv_name)
-    #     add_to_pv_list(pv_list, pv_name="13SIM1:{SimDetector-Cam:1}cam1:BinX")
-    #     add_to_pv_list(pv_list, pv_name="13SIM1:{SimDetector-Cam:1}cam1:BinY")
-    #     data = SR.create_config(parent_node_uid, name, pv_list)
-    #     print(f"data=\n{pprint.pformat(data)}")
-    #     node_uid = data["configurationNode"]["uniqueId"]
-    #     data = SR.update_config(node_uid, name + "a", pv_list)
-    #     print(f"data=\n{pprint.pformat(data)}")
-
-    # finally:
-    #     SR.close()
+    if not success:
+        exit(EXIT_CODE_OPERATION_FAILED)
