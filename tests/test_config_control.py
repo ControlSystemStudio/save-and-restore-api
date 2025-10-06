@@ -67,7 +67,7 @@ def test_config_add_01(clear_sar, library, usesetauth):  # noqa: F811
         with SaveRestoreAPI_Threads(base_url=base_url, timeout=2) as SR:
             auth = _select_auth(SR=SR, usesetauth=usesetauth)
 
-            response = SR.node_add(root_folder_uid, name="Child Folder", nodeType="FOLDER", **auth)
+            response = SR.node_add(root_folder_uid, node={"name": "Child Folder", "nodeType": "FOLDER"}, **auth)
             folder_uid = response["uniqueId"]
 
 
@@ -96,7 +96,8 @@ def test_config_add_01(clear_sar, library, usesetauth):  # noqa: F811
             async with SaveRestoreAPI_Async(base_url=base_url, timeout=2) as SR:
                 auth = _select_auth(SR=SR, usesetauth=usesetauth)
 
-                response = await SR.node_add(root_folder_uid, name="Child Folder", nodeType="FOLDER", **auth)
+                node = {"name": "Child Folder", "nodeType": "FOLDER"}
+                response = await SR.node_add(root_folder_uid, node=node, **auth)
                 folder_uid = response["uniqueId"]
 
                 response = await SR.config_add(
@@ -140,7 +141,7 @@ def test_config_update_01(clear_sar, library, usesetauth):  # noqa: F811
         with SaveRestoreAPI_Threads(base_url=base_url, timeout=2) as SR:
             auth = _select_auth(SR=SR, usesetauth=usesetauth)
 
-            response = SR.node_add(root_folder_uid, name="Child Folder", nodeType="FOLDER", **auth)
+            response = SR.node_add(root_folder_uid, node={"name": "Child Folder", "nodeType": "FOLDER"}, **auth)
             folder_uid = response["uniqueId"]
 
             response = SR.config_add(
@@ -186,7 +187,8 @@ def test_config_update_01(clear_sar, library, usesetauth):  # noqa: F811
             async with SaveRestoreAPI_Async(base_url=base_url, timeout=2) as SR:
                 auth = _select_auth(SR=SR, usesetauth=usesetauth)
 
-                response = await SR.node_add(root_folder_uid, name="Child Folder", nodeType="FOLDER", **auth)
+                node = {"name": "Child Folder", "nodeType": "FOLDER"}
+                response = await SR.node_add(root_folder_uid, node=node, **auth)
                 folder_uid = response["uniqueId"]
 
                 response = await SR.config_add(

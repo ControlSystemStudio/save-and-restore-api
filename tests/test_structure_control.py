@@ -38,9 +38,13 @@ def test_structure_move_01(clear_sar, library, usesetauth, usemove):  # noqa: F8
             auth_admin = {"auth": SR.auth_gen(username="admin", password="adminPass")}
 
             # Create two folders
-            response = SR.node_add(root_folder_uid, name="Folder1", nodeType="FOLDER", **auth)
+            response = SR.node_add(
+                root_folder_uid, node={"name": "Folder1", "nodeType": "FOLDER"}, **auth
+            )
             folder1_uid = response["uniqueId"]
-            response = SR.node_add(root_folder_uid, name="Folder2", nodeType="FOLDER", **auth)
+            response = SR.node_add(
+                root_folder_uid, node={"name": "Folder2", "nodeType": "FOLDER"}, **auth
+            )
             folder2_uid = response["uniqueId"]
 
             # Create two configurations in folder1
@@ -85,9 +89,13 @@ def test_structure_move_01(clear_sar, library, usesetauth, usemove):  # noqa: F8
                 auth_admin = {"auth": SR.auth_gen(username="admin", password="adminPass")}
 
                 # Create two folders
-                response = await SR.node_add(root_folder_uid, name="Folder1", nodeType="FOLDER", **auth)
+                response = await SR.node_add(
+                    root_folder_uid, node={"name": "Folder1", "nodeType": "FOLDER"}, **auth
+                )
                 folder1_uid = response["uniqueId"]
-                response = await SR.node_add(root_folder_uid, name="Folder2", nodeType="FOLDER", **auth)
+                response = await SR.node_add(
+                    root_folder_uid, node={"name": "Folder2", "nodeType": "FOLDER"}, **auth
+                )
                 folder2_uid = response["uniqueId"]
 
                 # Create two configurations in folder1
@@ -149,11 +157,15 @@ def test_structure_path_01(clear_sar, library, usesetauth):  # noqa: F811
 
             # Create two folders
             folder1_name = "Folder1"
-            response = SR.node_add(root_folder_uid, name=folder1_name, nodeType="FOLDER", **auth)
+            response = SR.node_add(
+                root_folder_uid, node={"name": folder1_name, "nodeType": "FOLDER"}, **auth
+            )
             folder1_uid = response["uniqueId"]
 
             node_name = "Node Name"
-            response = SR.node_add(folder1_uid, name=node_name, nodeType="FOLDER", **auth)
+            response = SR.node_add(
+                folder1_uid, node={"name": node_name, "nodeType": "FOLDER"}, **auth
+            )
             folder2_uid = response["uniqueId"]
 
             # Create two configurations in folder1
@@ -177,11 +189,15 @@ def test_structure_path_01(clear_sar, library, usesetauth):  # noqa: F811
 
                 # Create two folders
                 folder1_name = "Folder1"
-                response = await SR.node_add(root_folder_uid, name=folder1_name, nodeType="FOLDER", **auth)
+                response = await SR.node_add(
+                    root_folder_uid, node={"name": folder1_name, "nodeType": "FOLDER"}, **auth
+                )
                 folder1_uid = response["uniqueId"]
 
                 node_name = "Node Name"
-                response = await SR.node_add(folder1_uid, name=node_name, nodeType="FOLDER", **auth)
+                response = await SR.node_add(
+                    folder1_uid, node={"name": node_name, "nodeType": "FOLDER"}, **auth
+                )
                 folder2_uid = response["uniqueId"]
 
                 # Create two configurations in folder1

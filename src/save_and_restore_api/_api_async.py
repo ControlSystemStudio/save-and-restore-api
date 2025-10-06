@@ -102,11 +102,9 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         method, url, body_json = self._prepare_nodes_get(uniqueIds=uniqueIds)
         return await self.send_request(method, url, body_json=body_json)
 
-    async def node_add(self, parentNodeId, *, name, nodeType, auth=None, **kwargs):
+    async def node_add(self, parentNodeId, *, node, auth=None, **kwargs):
         # Reusing docstrings from the threaded version
-        method, url, params, body_json = self._prepare_node_add(
-            parentNodeId=parentNodeId, name=name, nodeType=nodeType, **kwargs
-        )
+        method, url, params, body_json = self._prepare_node_add(parentNodeId=parentNodeId, node=node)
         return await self.send_request(method, url, params=params, body_json=body_json, auth=auth)
 
     async def node_delete(self, nodeId, *, auth=None):

@@ -64,7 +64,7 @@ def create_root_folder():
     """
     with SaveRestoreAPI(base_url=base_url, timeout=2) as SR:
         SR.auth_set(username=admin_username, password=admin_password)
-        res = SR.node_add(SR.ROOT_NODE_UID, name=root_folder_node_name, nodeType="FOLDER")
+        res = SR.node_add(SR.ROOT_NODE_UID, node={"name": root_folder_node_name, "nodeType": "FOLDER"})
         return res["uniqueId"]
 
 

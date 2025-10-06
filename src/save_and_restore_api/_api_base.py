@@ -231,13 +231,14 @@ class _SaveRestoreAPI_Base:
         body_json = uniqueIds
         return method, url, body_json
 
-    def _prepare_node_add(self, *, parentNodeId, name, nodeType, **kwargs):
-        node_types = ("FOLDER", "CONFIGURATION")
-        if nodeType not in node_types:
-            raise self.RequestParameterError(f"Invalid nodeType: {nodeType!r}. Supported types: {node_types}.")
+    def _prepare_node_add(self, *, parentNodeId, node):
+        if "name" not in node or "nodeType" not in node:
+            raise self.RequestParameterError(f"Parameters 'name' and 'nodeType' are required in 'node': {node!r}.")
+        node_type, node_types = node["nodeType"], ("FOLDER", "CONFIGURATION")
+        if node_type not in node_types:
+            raise self.RequestParameterError(f"Invalid 'nodeType': {node_type!r}. Supported types: {node_types}.")
         method, url, params = "PUT", "/node", {"parentNodeId": parentNodeId}
-        body_json = kwargs
-        body_json.update({"name": name, "nodeType": nodeType})
+        body_json = node
         return method, url, params, body_json
 
     def _prepare_node_delete(self, *, nodeId):

@@ -559,7 +559,7 @@ def create_missing_folders(SR, folder_name, *, create_folders=False):
             path += f"/{f}"
             node_uid = check_node_exists(SR, path, node_type="FOLDER")
             if not node_uid:
-                response = SR.node_add(parent_uid, name=f, nodeType="FOLDER")
+                response = SR.node_add(parent_uid, node={"name": f, "nodeType": "FOLDER"})
                 node_uid = response["uniqueId"]
             parent_uid = node_uid
 

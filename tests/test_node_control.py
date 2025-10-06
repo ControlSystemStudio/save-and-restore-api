@@ -67,13 +67,13 @@ def test_nodes_get_01(clear_sar, library, usesetauth):  # noqa: F811
         with SaveRestoreAPI_Threads(base_url=base_url, timeout=2) as SR:
             auth = _select_auth(SR=SR, usesetauth=usesetauth)
 
-            response = SR.node_add(root_folder_uid, name="Parent Folder", nodeType="FOLDER", **auth)
+            response = SR.node_add(root_folder_uid, node={"name": "Parent Folder", "nodeType": "FOLDER"}, **auth)
             parent_uid = response["uniqueId"]
 
-            response = SR.node_add(parent_uid, name="Child Folder", nodeType="FOLDER", **auth)
+            response = SR.node_add(parent_uid, node={"name": "Child Folder", "nodeType": "FOLDER"}, **auth)
             folder_uid = response["uniqueId"]
 
-            response = SR.node_add(parent_uid, name="Child Config", nodeType="CONFIGURATION", **auth)
+            response = SR.node_add(parent_uid, node={"name": "Child Config", "nodeType": "CONFIGURATION"}, **auth)
             node_uid = response["uniqueId"]
 
             node_uids = [parent_uid, folder_uid, node_uid]
@@ -89,13 +89,19 @@ def test_nodes_get_01(clear_sar, library, usesetauth):  # noqa: F811
             async with SaveRestoreAPI_Async(base_url=base_url, timeout=2) as SR:
                 auth = _select_auth(SR=SR, usesetauth=usesetauth)
 
-                response = await SR.node_add(root_folder_uid, name="Parent Folder", nodeType="FOLDER", **auth)
+                response = await SR.node_add(
+                    root_folder_uid, node={"name": "Parent Folder", "nodeType": "FOLDER"}, **auth
+                )
                 parent_uid = response["uniqueId"]
 
-                response = await SR.node_add(parent_uid, name="Child Folder", nodeType="FOLDER", **auth)
+                response = await SR.node_add(
+                    parent_uid, node={"name": "Child Folder", "nodeType": "FOLDER"}, **auth
+                )
                 folder_uid = response["uniqueId"]
 
-                response = await SR.node_add(parent_uid, name="Child Config", nodeType="CONFIGURATION", **auth)
+                response = await SR.node_add(
+                    parent_uid, node={"name": "Child Config", "nodeType": "CONFIGURATION"}, **auth
+                )
                 node_uid = response["uniqueId"]
 
                 node_uids = [parent_uid, folder_uid, node_uid]
@@ -125,16 +131,22 @@ def test_node_add_01(clear_sar, library, usesetauth):  # noqa: F811
         with SaveRestoreAPI_Threads(base_url=base_url, timeout=2) as SR:
             auth = _select_auth(SR=SR, usesetauth=usesetauth)
 
-            response = SR.node_add(root_folder_uid, name="Test Folder", nodeType="FOLDER", **auth)
+            response = SR.node_add(
+                root_folder_uid, node={"name": "Test Folder", "nodeType": "FOLDER"}, **auth
+            )
             assert response["name"] == "Test Folder"
             assert response["nodeType"] == "FOLDER"
             folder_uid = response["uniqueId"]
 
-            response = SR.node_add(folder_uid, name="Test Config 1", nodeType="CONFIGURATION", **auth)
+            response = SR.node_add(
+                folder_uid, node={"name": "Test Config 1", "nodeType": "CONFIGURATION"}, **auth
+            )
             assert response["name"] == "Test Config 1"
             assert response["nodeType"] == "CONFIGURATION"
 
-            response = SR.node_add(folder_uid, name="Test Config 2", nodeType="CONFIGURATION", **auth)
+            response = SR.node_add(
+                folder_uid, node={"name": "Test Config 2", "nodeType": "CONFIGURATION"}, **auth
+            )
             assert response["name"] == "Test Config 2"
             assert response["nodeType"] == "CONFIGURATION"
 
@@ -143,16 +155,22 @@ def test_node_add_01(clear_sar, library, usesetauth):  # noqa: F811
             async with SaveRestoreAPI_Async(base_url=base_url, timeout=2) as SR:
                 auth = _select_auth(SR=SR, usesetauth=usesetauth)
 
-                response = await SR.node_add(root_folder_uid, name="Test Folder", nodeType="FOLDER", **auth)
+                response = await SR.node_add(
+                    root_folder_uid, node={"name": "Test Folder", "nodeType": "FOLDER"}, **auth
+                )
                 assert response["name"] == "Test Folder"
                 assert response["nodeType"] == "FOLDER"
                 folder_uid = response["uniqueId"]
 
-                response = await SR.node_add(folder_uid, name="Test Config 1", nodeType="CONFIGURATION", **auth)
+                response = await SR.node_add(
+                    folder_uid, node={"name": "Test Config 1", "nodeType": "CONFIGURATION"}, **auth
+                )
                 assert response["name"] == "Test Config 1"
                 assert response["nodeType"] == "CONFIGURATION"
 
-                response = await SR.node_add(folder_uid, name="Test Config 2", nodeType="CONFIGURATION", **auth)
+                response = await SR.node_add(
+                    folder_uid, node={"name": "Test Config 2", "nodeType": "CONFIGURATION"}, **auth
+                )
                 assert response["name"] == "Test Config 2"
                 assert response["nodeType"] == "CONFIGURATION"
 
@@ -175,13 +193,18 @@ def test_node_delete_01(clear_sar, library, usesetauth):  # noqa: F811
         with SaveRestoreAPI_Threads(base_url=base_url, timeout=2) as SR:
             auth = _select_auth(SR=SR, usesetauth=usesetauth)
 
-            response = SR.node_add(root_folder_uid, name="Test Folder", nodeType="FOLDER", **auth)
+            response = SR.node_add(
+                root_folder_uid, node={"name": "Test Folder", "nodeType": "FOLDER"}, **auth)
             folder_uid = response["uniqueId"]
 
-            response = SR.node_add(folder_uid, name="Test Config 1", nodeType="CONFIGURATION", **auth)
+            response = SR.node_add(
+                folder_uid, node={"name": "Test Config 1", "nodeType": "CONFIGURATION"}, **auth
+            )
             node_uid_1 = response["uniqueId"]
 
-            response = SR.node_add(folder_uid, name="Test Config 2", nodeType="CONFIGURATION", **auth)
+            response = SR.node_add(
+                folder_uid, node={"name": "Test Config 2", "nodeType": "CONFIGURATION"}, **auth
+            )
             node_uid_2 = response["uniqueId"]
 
             SR.node_delete(node_uid_1)
@@ -193,13 +216,19 @@ def test_node_delete_01(clear_sar, library, usesetauth):  # noqa: F811
             async with SaveRestoreAPI_Async(base_url=base_url, timeout=2) as SR:
                 auth = _select_auth(SR=SR, usesetauth=usesetauth)
 
-                response = await SR.node_add(root_folder_uid, name="Test Folder", nodeType="FOLDER", **auth)
+                response = await SR.node_add(
+                    root_folder_uid, node={"name": "Test Folder", "nodeType": "FOLDER"}, **auth
+                )
                 folder_uid = response["uniqueId"]
 
-                response = await SR.node_add(folder_uid, name="Test Config 1", nodeType="CONFIGURATION", **auth)
+                response = await SR.node_add(
+                    folder_uid, node={"name": "Test Config 1", "nodeType": "CONFIGURATION"}, **auth
+                )
                 node_uid_1 = response["uniqueId"]
 
-                response = await SR.node_add(folder_uid, name="Test Config 2", nodeType="CONFIGURATION", **auth)
+                response = await SR.node_add(
+                    folder_uid, node={"name": "Test Config 2", "nodeType": "CONFIGURATION"}, **auth
+                )
                 node_uid_2 = response["uniqueId"]
 
                 await SR.node_delete(node_uid_1)
@@ -224,13 +253,19 @@ def test_nodes_delete_01(clear_sar, library, usesetauth):  # noqa: F811
         with SaveRestoreAPI_Threads(base_url=base_url, timeout=2) as SR:
             auth = _select_auth(SR=SR, usesetauth=usesetauth)
 
-            response = SR.node_add(root_folder_uid, name="Test Folder", nodeType="FOLDER", **auth)
+            response = SR.node_add(
+                root_folder_uid, node={"name": "Test Folder", "nodeType": "FOLDER"}, **auth
+            )
             folder_uid = response["uniqueId"]
 
-            response = SR.node_add(folder_uid, name="Test Config 1", nodeType="CONFIGURATION", **auth)
+            response = SR.node_add(
+                folder_uid, node={"name": "Test Config 1", "nodeType": "CONFIGURATION"}, **auth
+            )
             node_uid_1 = response["uniqueId"]
 
-            response = SR.node_add(folder_uid, name="Test Config 2", nodeType="CONFIGURATION", **auth)
+            response = SR.node_add(
+                folder_uid, node={"name": "Test Config 2", "nodeType": "CONFIGURATION"}, **auth
+            )
             node_uid_2 = response["uniqueId"]
 
             SR.nodes_delete([node_uid_1, node_uid_2], **auth)
@@ -241,13 +276,19 @@ def test_nodes_delete_01(clear_sar, library, usesetauth):  # noqa: F811
             async with SaveRestoreAPI_Async(base_url=base_url, timeout=2) as SR:
                 auth = _select_auth(SR=SR, usesetauth=usesetauth)
 
-                response = await SR.node_add(root_folder_uid, name="Test Folder", nodeType="FOLDER", **auth)
+                response = await SR.node_add(
+                    root_folder_uid, node={"name": "Test Folder", "nodeType": "FOLDER"}, **auth
+                )
                 folder_uid = response["uniqueId"]
 
-                response = await SR.node_add(folder_uid, name="Test Config 1", nodeType="CONFIGURATION", **auth)
+                response = await SR.node_add(
+                    folder_uid, node={"name": "Test Config 1", "nodeType": "CONFIGURATION"}, **auth
+                )
                 node_uid_1 = response["uniqueId"]
 
-                response = await SR.node_add(folder_uid, name="Test Config 2", nodeType="CONFIGURATION", **auth)
+                response = await SR.node_add(
+                    folder_uid, node={"name": "Test Config 2", "nodeType": "CONFIGURATION"}, **auth
+                )
                 node_uid_2 = response["uniqueId"]
 
                 await SR.nodes_delete([node_uid_1, node_uid_2], **auth)
@@ -271,13 +312,19 @@ def test_node_get_children_01(clear_sar, library, usesetauth):  # noqa: F811
         with SaveRestoreAPI_Threads(base_url=base_url, timeout=2) as SR:
             auth = _select_auth(SR=SR, usesetauth=usesetauth)
 
-            response = SR.node_add(root_folder_uid, name="Parent Folder", nodeType="FOLDER", **auth)
+            response = SR.node_add(
+                root_folder_uid, node={"name": "Parent Folder", "nodeType": "FOLDER"}, **auth
+            )
             parent_uid = response["uniqueId"]
 
-            response = SR.node_add(parent_uid, name="Child Folder", nodeType="FOLDER", **auth)
+            response = SR.node_add(
+                parent_uid, node={"name": "Child Folder", "nodeType": "FOLDER"}, **auth
+            )
             folder_uid = response["uniqueId"]
 
-            response = SR.node_add(parent_uid, name="Child Config", nodeType="CONFIGURATION", **auth)
+            response = SR.node_add(
+                parent_uid, node={"name": "Child Config", "nodeType": "CONFIGURATION"}, **auth
+            )
             node_uid = response["uniqueId"]
 
             response = SR.node_get_children(parent_uid)
@@ -292,13 +339,19 @@ def test_node_get_children_01(clear_sar, library, usesetauth):  # noqa: F811
             async with SaveRestoreAPI_Async(base_url=base_url, timeout=2) as SR:
                 auth = _select_auth(SR=SR, usesetauth=usesetauth)
 
-                response = await SR.node_add(root_folder_uid, name="Parent Folder", nodeType="FOLDER", **auth)
+                response = await SR.node_add(
+                    root_folder_uid, node={"name": "Parent Folder", "nodeType": "FOLDER"}, **auth
+                )
                 parent_uid = response["uniqueId"]
 
-                response = await SR.node_add(parent_uid, name="Child Folder", nodeType="FOLDER", **auth)
+                response = await SR.node_add(
+                    parent_uid, node={"name": "Child Folder", "nodeType": "FOLDER"}, **auth
+                )
                 folder_uid = response["uniqueId"]
 
-                response = await SR.node_add(parent_uid, name="Child Config", nodeType="CONFIGURATION", **auth)
+                response = await SR.node_add(
+                    parent_uid, node={"name": "Child Config", "nodeType": "CONFIGURATION"}, **auth
+                )
                 node_uid = response["uniqueId"]
 
                 response = await SR.node_get_children(parent_uid)
@@ -326,7 +379,9 @@ def test_node_get_parent_01(clear_sar, library, usesetauth):  # noqa: F811
         with SaveRestoreAPI_Threads(base_url=base_url, timeout=2) as SR:
             auth = _select_auth(SR=SR, usesetauth=usesetauth)
 
-            response = SR.node_add(root_folder_uid, name="Child Folder", nodeType="FOLDER", **auth)
+            response = SR.node_add(
+                root_folder_uid, node={"name": "Child Folder", "nodeType": "FOLDER"}, **auth
+            )
             folder_uid = response["uniqueId"]
 
             response = SR.node_get_parent(folder_uid)
@@ -338,7 +393,9 @@ def test_node_get_parent_01(clear_sar, library, usesetauth):  # noqa: F811
             async with SaveRestoreAPI_Async(base_url=base_url, timeout=2) as SR:
                 auth = _select_auth(SR=SR, usesetauth=usesetauth)
 
-                response = await SR.node_add(root_folder_uid, name="Child Folder", nodeType="FOLDER", **auth)
+                response = await SR.node_add(
+                    root_folder_uid, node={"name": "Child Folder", "nodeType": "FOLDER"}, **auth
+                )
                 folder_uid = response["uniqueId"]
 
                 response = await SR.node_get_parent(folder_uid)

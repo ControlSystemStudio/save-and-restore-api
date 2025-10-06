@@ -230,16 +230,54 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         method, url, body_json = self._prepare_nodes_get(uniqueIds=uniqueIds)
         return self.send_request(method, url, body_json=body_json)
 
-    def node_add(self, parentNodeId, *, name, nodeType, auth=None, **kwargs):
+    def node_add(self, parentNodeId, *, node, auth=None, **kwargs):
         """
-        Creates a new node under the specified parent node. Required parameters:
-        ``name`` and ``nodeType``. Supported types: ``"FOLDER"``, ``"CONFIGURATION"``.
+        Creates a new node under the specified parent node.
 
         API: PUT /node?parentNodeId={parentNodeId}
+
+        Parameters
+        ----------
+        parentNodeId : str
+            Unique ID of the parent node.
+        node : dict
+            Node metadata. The required fields are ``name`` and ``nodeType``.
+            Supported node types: ``"FOLDER"``, ``"CONFIGURATION"``.
+        auth : httpx.BasicAuth
+            Object with authentication data (generated using ``auth_gen`` method). If not specified or None,
+            then the authentication set using ``auth_set`` method is used.
+
+        Returns
+        -------
+        dict
+            Created node metadata as returned by the server.
+
+        Examples
+        --------
+
+        .. code-block:: python
+
+            from save_and_restore_api import SaveRestoreAPI
+
+            with SaveRestoreAPI(base_url="http://localhost:8080/save-restore") as SR:
+                SR.auth_set(username="user", password="user_password")
+                root_folder_uid = SR.ROOT_NODE_UID
+                folder = SR.node_add(root_folder_uid, node={"name": "My Folder", "nodeType": "FOLDER"})
+                print(f"Created folder metadata: {folder}")
+
+        Async version:
+
+        .. code-block:: python
+
+            from save_and_restore_api.aio import SaveRestoreAPI
+
+            async with SaveRestoreAPI(base_url="http://localhost:8080/save-restore") as SR:
+                await SR.auth_set(username="user", password="user_password")
+                root_folder_uid = SR.ROOT_NODE_UID
+                folder = await SR.node_add(root_folder_uid, node={"name": "My Folder", "nodeType": "FOLDER"})
+                print(f"Created folder metadata: {folder}")
         """
-        method, url, params, body_json = self._prepare_node_add(
-            parentNodeId=parentNodeId, name=name, nodeType=nodeType, **kwargs
-        )
+        method, url, params, body_json = self._prepare_node_add(parentNodeId=parentNodeId, node=node)
         return self.send_request(method, url, params=params, body_json=body_json, auth=auth)
 
     def node_delete(self, nodeId, *, auth=None):

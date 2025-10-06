@@ -35,7 +35,7 @@ def test_tags_01(clear_sar, library, usesetauth):  # noqa: F811
         with SaveRestoreAPI_Threads(base_url=base_url, timeout=2) as SR:
             auth = _select_auth(SR=SR, usesetauth=usesetauth)
 
-            response = SR.node_add(root_folder_uid, name="folder", nodeType="FOLDER", **auth)
+            response = SR.node_add(root_folder_uid, node={"name": "folder", "nodeType": "FOLDER"}, **auth)
             folder_uid = response["uniqueId"]
 
             response = SR.config_add(
@@ -87,7 +87,9 @@ def test_tags_01(clear_sar, library, usesetauth):  # noqa: F811
             async with SaveRestoreAPI_Async(base_url=base_url, timeout=2) as SR:
                 auth = _select_auth(SR=SR, usesetauth=usesetauth)
 
-                response = await SR.node_add(root_folder_uid, name="folder", nodeType="FOLDER", **auth)
+                response = await SR.node_add(
+                    root_folder_uid, node={"name": "folder", "nodeType": "FOLDER"}, **auth
+                )
                 folder_uid = response["uniqueId"]
 
                 response = await SR.config_add(
