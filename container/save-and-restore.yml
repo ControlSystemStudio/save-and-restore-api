@@ -1,13 +1,15 @@
 services:
   saveandrestore:
-    image: ghcr.io/controlsystemstudio/phoebus/service-save-and-restore:master
-    ports:
-      - "8080:8080"
+    image: ghcr.io/controlsystemstudio/phoebus/service-save-and-restore:v5.0.2
+    network_mode: "host"
+    # ports:
+    #   - "8080:8080"
     depends_on:
       - elasticsearch
     environment:
       ELASTICSEARCH_NETWORK_HOST: ${HOST_EXTERNAL_IP_ADDRESS}
       EPICS_PVA_ADDR_LIST: ${HOST_EXTERNAL_IP_ADDRESS}
+      EPICS_PVAS_INTF_ADDR_LIST: ${HOST_EXTERNAL_IP_ADDRESS}
       EPICS_PVA_AUTO_ADDR_LIST: "NO"
       EPICS_PVA_ENABLE_IPV6: "false"
     command: >
@@ -22,8 +24,9 @@ services:
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.11.2
-    ports:
-      - "9200:9200"
+    network_mode: "host"
+    # ports:
+    #   - "9200:9200"
     environment:
       discovery.type: single-node
       bootstrap.memory_lock: "true"

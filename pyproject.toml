@@ -29,7 +29,7 @@ dependencies = [
 ]
 
 [project.scripts]
-save-and-restore-upload = "save_and_restore_api.tools.upload:main"
+save-and-restore = "save_and_restore_api.tools.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/dmgav/save-and-restore-api"
@@ -41,13 +41,17 @@ dev = [
   "pytest-asyncio",
   "pre-commit",
   "ruff",
+  "softioc",
+  "pyepics",
 ]
 docs = [
   "sphinx>=7.0",
   "myst_parser>=0.13",
   "sphinx_copybutton",
   "sphinx_autodoc_typehints",
-  "furo>=2023.08.17",
+  "sphinx_rtd_theme",
+  "numpydoc",
+  "ipython",
 ]
 
 [tool.setuptools_scm]
@@ -58,7 +62,7 @@ minversion = "6.0"
 # Run pytest with all our checkers, and don't spam us with massive tracebacks on error
 # Don't collect the interactive directory which is intended for manual execution
 addopts = """
-    --tb=native -vv --doctest-modules --doctest-glob="*.rst" --ignore src/bluesky/tests/interactive
+    --tb=native -vv --doctest-modules --doctest-glob="*.rst" --ignore docs --ignore ioc
     """
 # https://iscinumpy.gitlab.io/post/bound-version-constraints/#watch-for-warnings
 filterwarnings = [
