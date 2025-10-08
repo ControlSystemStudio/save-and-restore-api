@@ -1,8 +1,8 @@
 # save-and-restore-api
 
-Python package for communicating with Save-and-Restore service (CSS Phoebus). The
-package provides syncronous (thread-based) and asynchronous (asyncio) versions of
-the API functions.
+The repository contains a Python package for communicating with Save-and-Restore service
+(CSS Phoebus). The package provides syncronous (thread-based) and asynchronous (asyncio)
+versions of the API functions.
 
 ## Examples
 
@@ -10,33 +10,33 @@ The following code creates a folder node named "My Folder" under the root node:
 
 ```python
 
-    from save_and_restore_api import SaveRestoreAPI
+from save_and_restore_api import SaveRestoreAPI
 
-    with SaveRestoreAPI(base_url="http://localhost:8080/save-restore") as SR:
-        SR.auth_set(username="user", password="user_password")
+with SaveRestoreAPI(base_url="http://localhost:8080/save-restore") as SR:
+    SR.auth_set(username="user", password="user_password")
 
-        root_folder_uid = SR.ROOT_NODE_UID
-        node={"name": "My Folder", "nodeType": "FOLDER"}
+    root_folder_uid = SR.ROOT_NODE_UID
+    node={"name": "My Folder", "nodeType": "FOLDER"}
 
-        folder = SR.node_add(root_folder_uid, node=node)
+    folder = SR.node_add(root_folder_uid, node=node)
 
-        print(f"Created folder metadata: {folder}")
+    print(f"Created folder metadata: {folder}")
 ```
 
 Async version of the same code:
 
 ```python
 
-    from save_and_restore_api.aio import SaveRestoreAPI
+from save_and_restore_api.aio import SaveRestoreAPI
 
-    async with SaveRestoreAPI(base_url="http://localhost:8080/save-restore") as SR:
-        await SR.auth_set(username="user", password="user_password")
+async with SaveRestoreAPI(base_url="http://localhost:8080/save-restore") as SR:
+    await SR.auth_set(username="user", password="user_password")
 
-        root_folder_uid = SR.ROOT_NODE_UID
-        node={"name": "My Folder", "nodeType": "FOLDER"}
+    root_folder_uid = SR.ROOT_NODE_UID
+    node={"name": "My Folder", "nodeType": "FOLDER"}
 
-        folder = await SR.node_add(root_folder_uid, node=node)
-        print(f"Created folder metadata: {folder}")
+    folder = await SR.node_add(root_folder_uid, node=node)
+    print(f"Created folder metadata: {folder}")
 ```
 
 
