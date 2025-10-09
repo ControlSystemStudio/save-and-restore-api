@@ -61,11 +61,19 @@ The list of supported functions can also be extended.
 
 ## How to use `save-and-restore` CLI Tool
 
+
+Check login credentials. User password is requested interactively. Alternatively, the
+password can be passed using environment variable `SAVE_AND_RESTORE_API_USER_PASSWORD``.
+
+```bash
+save-and-restore --base-url http://localhost:8080/save-restore --user-name=user LOGIN
+```
+
 Read the configuration node named 'eiger_config'. Print the full configuration data
 (the list of PVs):
 
 ```bash
-save-and-restore --host-url http://localhost:8080/save-restore \
+save-and-restore --base-url http://localhost:8080/save-restore \
 CONFIG GET --config-name /detectors/imaging/eiger_config --show-data=ON
 ```
 
@@ -74,8 +82,8 @@ file ``eiger_pvs.sav``. Automatically create any missing parent folders in
 the path:
 
 ```bash
-save-and-restore --host-url=http://localhost:8080/save-restore --username=user\
---create-folders=true CONFIG ADD --config-name=/detectors/imaging/eiger_config \
+save-and-restore --base-url=http://localhost:8080/save-restore --user-name=user \
+--create-folders=ON CONFIG ADD --config-name=/detectors/imaging/eiger_config \
 --file-name=eiger_pvs.sav --file-format=autosave
 ```
 
@@ -83,7 +91,7 @@ Update an existing configuration node named 'eiger_config'. Load the list of PVs
 from the file ``eiger_pvs.sav``:
 
 ```bash
-save-and-restore --host-url http://localhost:8080/save-restore --username=user\
+save-and-restore --base-url http://localhost:8080/save-restore --user-name=user \
 CONFIG UPDATE --config-name /detectors/imaging/eiger_config \
 --file-name eiger_pvs.sav --file-format autosave
 ```
