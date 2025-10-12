@@ -646,6 +646,16 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         Returns snapshot data (``snapshotData``) for the snapshot specified by ``uniqueId``.
 
         API: GET /snapshot/{uniqueId}
+
+        Parameters
+        ----------
+        uniqueId : str
+            Unique ID of the snapshot node.
+
+        Returns
+        -------
+        dict
+            Snapshot data (``snapshotData``) as returned by the server.
         """
         method, url = self._prepare_snapshot_get(uniqueId=uniqueId)
         return self.send_request(method, url)
@@ -656,6 +666,25 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         under the existing configuration node specified by ``parentNodeId``.
 
         API: PUT /snapshot?parentNodeId={parentNodeId}
+
+        Parameters
+        ----------
+        parentNodeId : str
+            Unique ID of the parent configuration node.
+        snapshotNode : dict
+            Snapshot node (``snapshotNode``) metadata. The required field is ``"name"``.
+        snapshotData : dict
+            Snapshot data (``snapshotData``). The required field is ``"snapshotItems"``.
+        auth : httpx.BasicAuth, optional
+            Object with authentication data (generated using ``auth_gen`` method). If not specified or None,
+            then the authentication set using ``auth_set`` method is used.
+
+        Returns
+        -------
+        dict
+            Dictionary contains snapshot node metadata and snapshot data of the node
+            that was added. The dictionary contains two keys: ``snapshotNode`` and
+            ``snapshotData`` as returned by the server.
         """
         method, url, params, body_json = self._prepare_snapshot_add(
             parentNodeId=parentNodeId, snapshotNode=snapshotNode, snapshotData=snapshotData
@@ -668,6 +697,25 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         must have valid ``uniqueId`` fields pointing to an existing node.
 
         API: POST /snapshot
+
+        Parameters
+        ----------
+        snapshotNode : dict
+            Snapshot node (``snapshotNode``) metadata. ``uniqueId`` field must point to
+            an existing snapshot node.
+        snapshotData : dict
+            Snapshot data (``snapshotData``). ``uniqueId`` field must be identical to the
+            ``uniqueId`` field in ``snapshotNode``.
+        auth : httpx.BasicAuth, optional
+            Object with authentication data (generated using ``auth_gen`` method). If not specified or None,
+            then the authentication set using ``auth_set`` method is used.
+
+        Returns
+        -------
+        dict
+            Dictionary contains snapshot node metadata and snapshot data of the node
+            that was updated. The dictionary contains two keys: ``snapshotNode`` and
+            ``snapshotData`` as returned by the server.
         """
         method, url, body_json = self._prepare_snapshot_update(
             snapshotNode=snapshotNode, snapshotData=snapshotData
@@ -679,6 +727,12 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         Returns a list of all existing snapshots (list of ``snapshotNode`` objects).
 
         API: GET /snapshots
+
+        Returns
+        -------
+        list[dict]
+            List of snapshot nodes (``snapshotNode``) as returned by the server. The list
+            does not include snapshot data.
         """
         method, url = self._prepare_snapshots_get()
         return self.send_request(method, url)
