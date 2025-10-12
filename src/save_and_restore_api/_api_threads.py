@@ -214,18 +214,61 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
     def node_get(self, uniqueNodeId):
         """
-        Returns the node with specified node UID.
+        Returns the metadata for the node with specified node UID.
 
         API: GET /node/{uniqueNodeId}
+
+        Parameters
+        ----------
+        uniqueNodeId : str
+            Unique ID of the node.
+
+        Returns
+        -------
+        dict
+            Node metadata as returned by the server.
+
+        Examples
+        --------
+
+        .. code-block:: python
+
+            from save_and_restore_api import SaveRestoreAPI
+
+            with SaveRestoreAPI(base_url="http://localhost:8080/save-restore") as SR:
+                root_folder_uid = SR.ROOT_NODE_UID
+                root_folder = SR.node_get(root_folder_uid)
+                print(f"Root folder metadata: {root_folder}")
+
+        Async version:
+        .. code-block:: python
+
+            from save_and_restore_api.aio import SaveRestoreAPI
+
+            async with SaveRestoreAPI(base_url="http://localhost:8080/save-restore") as SR:
+                root_folder_uid = SR.ROOT_NODE_UID
+                root_folder = await SR.node_get(root_folder_uid)
+                print(f"Root folder metadata: {root_folder}")
         """
         method, url = self._prepare_node_get(uniqueNodeId=uniqueNodeId)
         return self.send_request(method, url)
 
     def nodes_get(self, uniqueIds):
         """
-        Returns nodes specified by a list of UIDs.
+        Returns metadata for multiple nodes specified by a list of UIDs. This API is
+        similar to calling ``node_get()`` multiple times, but is more efficient.
 
         API: GET /nodes
+
+        Parameters
+        ----------
+        uniqueIds : list of str
+            List of node unique IDs.
+
+        Returns
+        -------
+        list of dict
+            List of node metadata as returned by the server.
         """
         method, url, body_json = self._prepare_nodes_get(uniqueIds=uniqueIds)
         return self.send_request(method, url, body_json=body_json)
@@ -262,7 +305,8 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
             with SaveRestoreAPI(base_url="http://localhost:8080/save-restore") as SR:
                 SR.auth_set(username="user", password="user_password")
                 root_folder_uid = SR.ROOT_NODE_UID
-                folder = SR.node_add(root_folder_uid, node={"name": "My Folder", "nodeType": "FOLDER"})
+                node  = {"name": "My Folder", "nodeType": "FOLDER"}
+                folder = SR.node_add(root_folder_uid, node=node)
                 print(f"Created folder metadata: {folder}")
 
         Async version:
@@ -274,7 +318,8 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
             async with SaveRestoreAPI(base_url="http://localhost:8080/save-restore") as SR:
                 await SR.auth_set(username="user", password="user_password")
                 root_folder_uid = SR.ROOT_NODE_UID
-                folder = await SR.node_add(root_folder_uid, node={"name": "My Folder", "nodeType": "FOLDER"})
+                node  = {"name": "My Folder", "nodeType": "FOLDER"}
+                folder = await SR.node_add(root_folder_uid, node=node)
                 print(f"Created folder metadata: {folder}")
         """
         method, url, params, body_json = self._prepare_node_add(parentNodeId=parentNodeId, node=node)
@@ -283,28 +328,64 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
     def node_delete(self, nodeId, *, auth=None):
         """
         Deletes the node with specified node ID. The call fails if the node can
-        not be deleted.
+        not be deleted, e.g. the node is a non-empty folder.
 
         API: DELETE /node/{nodeId}
+
+        Parameters
+        ----------
+        nodeId : str
+            Unique ID of the node to be deleted.
+        auth : httpx.BasicAuth
+            Object with authentication data (generated using ``auth_gen`` method). If not specified or None,
+            then the authentication set using ``auth_set`` method is used.
+
+        Returns
+        -------
+        None
         """
         method, url = self._prepare_node_delete(nodeId=nodeId)
         return self.send_request(method, url, auth=auth)
 
     def nodes_delete(self, uniqueIds, *, auth=None):
         """
-        Deletes multiple nodes specified as a list of UIDs. The call fails if
-        any of the nodes can not be deleted.
+        Deletes multiple nodes specified by the list of UIDs. The API goes through the nodes in the list
+        and deletes the nodes. It fails if the node can not be deleted and does not try to delete the
+        following nodes.
 
         API: DELETE /node
+
+        Parameters
+        ----------
+        uniqueIds : list[str]
+            List of UIDs of the nodes to delete.
+        auth : httpx.BasicAuth
+            Object with authentication data (generated using ``auth_gen`` method). If not specified or None,
+            then the authentication set using ``auth_set`` method is used.
+
+        Returns
+        -------
+        None
         """
         method, url, body_json = self._prepare_nodes_delete(uniqueIds=uniqueIds)
         return self.send_request(method, url, body_json=body_json, auth=auth)
 
     def node_get_children(self, uniqueNodeId):
         """
-        Returns the list of child nodes for the specified node UID.
+        Returns the list of child nodes for the node with specified UID.
 
         API: GET /node/{uniqueNodeId}/children
+
+        Parameters
+        ----------
+        uniqueNodeId : str
+            Unique ID of the node.
+
+        Returns
+        -------
+        list[dict]
+            List of child node nodes. The list elements are dictionaries containing
+            the node metadata as returned by the server.
         """
         method, url = self._prepare_node_get_children(uniqueNodeId=uniqueNodeId)
         return self.send_request(method, url)
@@ -314,6 +395,16 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         Returns the parent node for the specified node UID.
 
         API: GET /node/{uniqueNodeId}/parent
+
+        Parameters
+        ----------
+        uniqueNodeId : str
+            Unique ID of the node.
+
+        Returns
+        -------
+        dict
+            Parent node metadata as returned by the server.
         """
         method, url = self._prepare_node_get_parent(uniqueNodeId=uniqueNodeId)
         return self.send_request(method, url)
@@ -324,10 +415,20 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
     def config_get(self, uniqueNodeId):
         """
-        Returns the config data for the node with specified node UID. Returns only the configuration
-        data. To get the node metadata use ``node_get()``.
+        Returns the configuration data for the node with specified node UID. Returns only
+        the configuration data. To get the node metadata use ``node_get()``.
 
         API: GET /config/{uniqueNodeId}
+
+        Parameters
+        ----------
+        uniqueNodeId : str
+            Unique ID of the configuration node.
+
+        Returns
+        -------
+        dict
+            Configuration data (``configurationData``) as returned by the server.
         """
         method, url = self._prepare_config_get(uniqueNodeId=uniqueNodeId)
         return self.send_request(method, url)
@@ -339,8 +440,10 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
         Minimum required fields:
 
-        configurationNode = {"name": "test_config"}
-        configurationData = {"pvList": [{"pvName": "PV1"}, {"pvName": "PV2"}]}
+        .. code-block:: python
+
+            configurationNode = {"name": "test_config"}
+            configurationData = {"pvList": [{"pvName": "PV1"}, {"pvName": "PV2"}]}
 
         The fields ``uniqueId``, ``nodeType``, ``userName`` in ``configurationNode`` are ignored
         and overwritten by the server.
@@ -349,6 +452,22 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         as returned by the server.
 
         API: PUT /config?parentNodeId={parentNodeId}
+
+        Parameters
+        ----------
+        parentNodeId : str
+            Unique ID of the parent node.
+        configurationNode : dict
+            Configuration node (``configurationNode``) metadata. The required field is ``name``.
+        configurationData : dict
+            Configuration data (``configurationData``). The required field is ``pvList``.
+
+        Returns
+        -------
+        dict
+            Dictionary contains configuration node metadata and configuration data of the node
+            that was added. The dictionary contains two keys: ``configurationNode`` and
+            ``configurationData`` as returned by the server.
         """
         method, url, body_json = self._prepare_config_add(
             parentNodeId=parentNodeId, configurationNode=configurationNode, configurationData=configurationData
@@ -357,11 +476,32 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
     def config_update(self, *, configurationNode, configurationData, auth=None):
         """
-        Updates an existing configuration node. Parameters ``configurationNode`` and ``configurationData``
-        should be loaded using ``node_get()`` and ``config_get()`` respectively. Both parameters must
-        contain correct ``uniqueID`` field values.
+        Update an existing configuration node. It is best if ``configurationNode`` and ``configurationData``
+        are loaded using ``node_get()`` and ``config_get()`` APIs respectively and then modified in the
+        application code. Both dictionaries can also be created from scratch in the application code if
+        necessary. Both dictionaries must contain correct correct UID (``uniqueID``) of an existing
+        configuration node.
 
         API: POST /config
+
+        Parameters
+        ----------
+        configurationNode : dict
+            Configuration node (``configurationNode``) metadata. ``uniqueId`` field must be point to
+            an existing configuration node.
+        configurationData : dict
+            Configuration data (``configurationData``). ``uniqueId`` field must be identical to the
+            ``uniqueId`` field in ``configurationNode``.
+        auth : httpx.BasicAuth
+            Object with authentication data (generated using ``auth_gen`` method). If not specified or None,
+            then the authentication set using ``auth_set`` method is used.
+
+        Returns
+        -------
+        dict
+            Dictionary contains configuration node metadata and configuration data of the node
+            that was updated. The dictionary contains two keys: ``configurationNode`` and
+            ``configurationData`` as returned by the server.
         """
         method, url, body_json = self._prepare_config_update(
             configurationNode=configurationNode, configurationData=configurationData
