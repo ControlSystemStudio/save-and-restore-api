@@ -588,6 +588,17 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         The returned list format matches the format of ``snapshotData["snapshotItems"]``.
 
         API: GET /take-snapshot/{uniqueNodeId}
+
+        Parameters
+        ----------
+        uniqueNodeId : str
+            Unique ID of the configuration node.
+
+        Returns
+        -------
+        list[dict]
+            List of PV values read from the control system. Each PV is represented as a dictionary
+            of parameters. The format is consistent with the format of ``snapshotData["snapshotItems"]``.
         """
         method, url = self._prepare_take_snapshot_get(uniqueNodeId=uniqueNodeId)
         return self.send_request(method, url)
@@ -599,6 +610,27 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         the name of the snapshot node and ``comment`` specifies the node description.
 
         API: PUT /take-snapshot/{uniqueNodeId}
+
+        Parameters
+        ----------
+        uniqueNodeId : str
+            Unique ID of the configuration node.
+        name : str, optional
+            Name of the new snapshot node. If not specified or None, the name is set to
+            the date and time of the snapshot, e.g. ``2025-10-12 22:49:50.577``.
+        comment : str, optional
+            Description of the new snapshot node. If not specified or None, the comment
+            is set to date and time of the snapshot, e.g. ``2025-10-12 22:49:50.577``.
+        auth : httpx.BasicAuth, optional
+            Object with authentication data (generated using ``auth_gen`` method). If not specified or None,
+            then the authentication set using ``auth_set`` method is used.
+
+        Returns
+        -------
+        dict
+            Dictionary contains snapshot node metadata and snapshot data of the node
+            that was created. The dictionary contains two keys: ``snapshotNode`` and
+            ``snapshotData`` as returned by the server.
         """
         method, url, params = self._prepare_take_snapshot_save(
             uniqueNodeId=uniqueNodeId, name=name, comment=comment
