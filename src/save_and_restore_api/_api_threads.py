@@ -514,9 +514,16 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
     def tags_get(self):
         """
-        Returns all existing tags.
+        Returns the list of all existing tags.
 
         API: GET /tags
+
+        Returns
+        -------
+        list[dict]
+            List of all tags in the database. Each tag is dictionary with the following keys: ``name``
+            - tag name, ``comment`` - tag comment (may be empty). The list may contain repeated elements.
+            Tags do not contain pointers to tagged nodes.
         """
         method, url = self._prepare_tags_get()
         return self.send_request(method, url)
@@ -527,16 +534,45 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         dictionary must contain the ``name`` key and optionally ``comment`` key.
 
         API: POST /tags
+
+        Parameters
+        ----------
+        uniqueNodeIds : list of str
+            List of node unique IDs to which the tag should be added.
+        tag : dict
+            Tag to be added. The dictionary must contain the ``name`` key and optionally ``comment`` key.
+        auth : httpx.BasicAuth, optional
+            Object with authentication data (generated using ``auth_gen`` method). If not specified or None,
+            then the authentication set using ``auth_set`` method is used.
+
+        Returns
+        -------
+        list[dict]
+            List of node metadata for the nodes to which the tag was added.
         """
         method, url, body_json = self._prepare_tags_add(uniqueNodeIds=uniqueNodeIds, tag=tag)
         return self.send_request(method, url, body_json=body_json, auth=auth)
 
     def tags_delete(self, *, uniqueNodeIds, tag, auth=None):
         """
-        Deletes ``tag`` to nodes specified by a list of UIDs ``uniqueNodeIds``. The ``tag``
-        dictionary must contain the ``name`` key and optionally ``comment`` key.
+        Deletes ``tag`` from the nodes specified by a list of UIDs ``uniqueNodeIds``. The deleted
+        tag is identified by the ``"name"`` in the ``tag`` dictionary. The ``tag``
+        dictionary may optionally ``comment`` key, but it is ignored by the API.
 
         API: DELETE /tags
+
+        Parameters
+        ----------
+        uniqueNodeIds : list[str]
+            List of node unique IDs from which the tag should be deleted.
+        tag : dict
+            Tag to be deleted. The dictionary must contain the ``name`` key. The ``comment`` key
+            is optional and ignored by the API.
+
+        Returns
+        -------
+        list[dict]
+            List of node metadata for the nodes from ``uniqueNodeIds`` list.
         """
         method, url, body_json = self._prepare_tags_delete(uniqueNodeIds=uniqueNodeIds, tag=tag)
         return self.send_request(method, url, body_json=body_json, auth=auth)
