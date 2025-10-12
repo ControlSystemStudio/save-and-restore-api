@@ -743,11 +743,21 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
     def composite_snapshot_get(self, uniqueId):
         """
-        Returns composite snapshot data (``compositeSnapshotData``). The composite snapshot is
-        specified by ``uniqueId``. The data includes uniqueId and the list of referencedSnapshotNodes
-        (no PV information).
+        Returns composite snapshot data (``compositeSnapshotData``) specified by ``uniqueId``.
+        The data includes uniqueId and the list of referencedSnapshotNodes (no PV information).
+        The composite snapshot node metadata can be obtained using ``node_get()``.
 
         API: GET /composite-snapshot/{uniqueId}
+
+        Parameters
+        ----------
+        uniqueId : str
+            Unique ID of the composite snapshot node.
+
+        Returns
+        -------
+        dict
+            Composite snapshot data (``compositeSnapshotData``) as returned by the server.
         """
         method, url = self._prepare_composite_snapshot_get(uniqueId=uniqueId)
         return self.send_request(method, url)
@@ -758,16 +768,38 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         specified by ``uniqueId``.
 
         API: GET /composite-snapshot/{uniqueId}/nodes
+
+        Parameters
+        ----------
+        uniqueId : str
+            Unique ID of the composite snapshot node.
+
+        Returns
+        -------
+        list[dict]
+            List of snapshot nodes. Each snapshot node is represented as a dictionary with
+            node metadata. No composite snapshot data is returned.
         """
         method, url = self._prepare_composite_snapshot_get_nodes(uniqueId=uniqueId)
         return self.send_request(method, url)
 
     def composite_snapshot_get_items(self, uniqueId):
         """
-        Returns a list of restorable items referenced by the composite snapshot. The composite snapshot is
-        specified by ``uniqueId``.
+        Returns a list of restorable items (PV data) referenced by the composite snapshot.
+        The composite snapshot is specified by ``uniqueId``.
 
         API: GET /composite-snapshot/{uniqueId}/items
+
+        Parameters
+        ----------
+        uniqueId : str
+            Unique ID of the composite snapshot node.
+
+        Returns
+        -------
+        list[dict]
+            List of snapshot items (PVs). The format is consistent with the format of
+            ``snapshotData["snapshotItems"]``
         """
         method, url = self._prepare_composite_snapshot_get_items(uniqueId=uniqueId)
         return self.send_request(method, url)
@@ -778,6 +810,27 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         specified by ``parentNodeId``.
 
         API: PUT /composite-snapshot?parentNodeId={parentNodeId}
+
+        Parameters
+        ----------
+        parentNodeId : str
+            Unique ID of the parent configuration node.
+        compositeSnapshotNode : dict
+            Composite snapshot node (``compositeSnapshotNode``) metadata. The required field is ``"name"``.
+        compositeSnapshotData : dict
+            Composite snapshot data (``compositeSnapshotData``). The required field is
+            ``"referencedSnapshotNodes"``, which points to the list of UIDs of the nodes included in
+            the composite snapshot.
+        auth : httpx.BasicAuth, optional
+            Object with authentication data (generated using ``auth_gen`` method). If not specified or None,
+            then the authentication set using ``auth_set`` method is used.
+
+        Returns
+        -------
+        dict
+            Dictionary contains composite snapshot node metadata and composite snapshot data
+            of the node that was added. The dictionary contains two keys: ``compositeSnapshotNode`` and
+            ``compositeSnapshotData`` as returned by the server.
         """
         method, url, params, body_json = self._prepare_composite_snapshot_add(
             parentNodeId=parentNodeId,
@@ -792,6 +845,25 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         must have valid ``uniqueId`` fields pointing to an existing node.
 
         API: POST /composite-snapshot
+
+        Parameters
+        ----------
+        compositeSnapshotNode : dict
+            Composite snapshot node (``compositeSnapshotNode``) metadata. ``uniqueId`` field must point to
+            an existing composite snapshot node.
+        compositeSnapshotData : dict
+            Composite snapshot data (``compositeSnapshotData``). ``uniqueId`` field must be identical to the
+            ``uniqueId`` field in ``compositeSnapshotNode``.
+        auth : httpx.BasicAuth, optional
+            Object with authentication data (generated using ``auth_gen`` method). If not specified or None,
+            then the authentication set using ``auth_set`` method is used.
+
+        Returns
+        -------
+        dict
+            Dictionary contains composite snapshot node metadata and composite snapshot data
+            of the node that was updated. The dictionary contains two keys: ``compositeSnapshotNode`` and
+            ``compositeSnapshotData`` as returned by the server.
         """
         method, url, body_json = self._prepare_composite_snapshot_update(
             compositeSnapshotNode=compositeSnapshotNode,
@@ -801,9 +873,30 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
     def composite_snapshot_consistency_check(self, uniqueNodeIds, *, auth=None):
         """
-        Check consistency of the composite snapshots.
+        Check consistency of the composite snapshots. The snapshot is specified by the list of
+        UIDs of snapshots and composite snapshots included in the composite snapshot.
+        One of the use cases is to check if a snapshot can be added to an existing composite
+        snapshot. In this case the list of UIDs includes the UID of the exisitng composite
+        snapshot and the UID of the new snapshot to be added. The function returns a list
+        of PV data for each conflicting PV (composite snapshot items may not contain duplicate
+        PVs).
 
         API: POST /composite-snapshot-consistency-check
+
+        Parameters
+        ----------
+        uniqueNodeIds : list of str
+            List of UIDs of snapshots and composite snapshots included in the composite snapshot.
+        auth : httpx.BasicAuth, optional
+            Object with authentication data (generated using ``auth_gen`` method). If not specified or None,
+            then the authentication set using ``auth_set`` method is used.
+
+        Returns
+        -------
+        list[dict]
+            List of conflicting PVs. Each PV is represented as a dictionary of parameters.
+            If the list is empty, then there are no conflicts and the composite snapshot
+            can be created or updated.
         """
         method, url, body_json = self._prepare_composite_snapshot_consistency_check(uniqueNodeIds=uniqueNodeIds)
         return self.send_request(method, url, body_json=body_json, auth=auth)
