@@ -799,7 +799,7 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         -------
         list[dict]
             List of snapshot items (PVs). The format is consistent with the format of
-            ``snapshotData["snapshotItems"]``
+            ``snapshotData["snapshotItems"]``.
         """
         method, url = self._prepare_composite_snapshot_get_items(uniqueId=uniqueId)
         return self.send_request(method, url)
@@ -896,7 +896,8 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         list[dict]
             List of conflicting PVs. Each PV is represented as a dictionary of parameters.
             If the list is empty, then there are no conflicts and the composite snapshot
-            can be created or updated.
+            can be created or updated. The format is consistent with the format of
+            ``snapshotData["snapshotItems"]``.
         """
         method, url, body_json = self._prepare_composite_snapshot_consistency_check(uniqueNodeIds=uniqueNodeIds)
         return self.send_request(method, url, body_json=body_json, auth=auth)
@@ -908,10 +909,22 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
     def restore_node(self, nodeId, *, auth=None):
         """
         Restore PVs based on the data from an existing snapshot node specified by nodeId.
-
         Returns a list of snapshotItems that were NOT restored. Ideally the list should be empty.
 
         API: POST /restore/node
+
+        Parameters
+        ----------
+        nodeId : str
+            Unique ID of the snapshot node.
+        auth : httpx.BasicAuth, optional
+            Object with authentication data (generated using ``auth_gen`` method).
+
+        Returns
+        -------
+        list[dict]
+            List of snapshot items (PVs) that were NOT restored. The format is consistent with
+            the format of ``snapshotData["snapshotItems"]``.
         """
         method, url, params = self._prepare_restore_node(nodeId=nodeId)
         return self.send_request(method, url, params=params, auth=auth)
@@ -924,6 +937,20 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         Returns a list of snapshotItems that were NOT restored. Ideally the list should be empty.
 
         API: POST /restore/items
+
+        Parameters
+        ----------
+        snapshotItems : list of dict
+            List of snapshot items (PVs) to be restored. The format is consistent with
+            the format of ``snapshotData["snapshotItems"]``.
+        auth : httpx.BasicAuth, optional
+            Object with authentication data (generated using ``auth_gen`` method).
+
+        Returns
+        -------
+        list[dict]
+            List of snapshot items (PVs) that were NOT restored. The format is consistent with
+            the format of ``snapshotData["snapshotItems"]``.
         """
         method, url, body_json = self._prepare_restore_items(snapshotItems=snapshotItems)
         return self.send_request(method, url, body_json=body_json, auth=auth)
@@ -939,6 +966,25 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         the snapshot.
 
         API: GET /compare/{nodeId}
+
+        Parameters
+        ----------
+        nodeId : str
+            Unique ID of the snapshot or composite snapshot node.
+        tolerance : float, optional
+            Tolerance for numerical comparisons. If not specified or None, the default is 0.
+        compareMode : str, optional
+            Comparison mode. Supported values: ``"ABSOLUTE"``, ``"RELATIVE"``.
+        skipReadback : bool, optional
+            If True, then ``pvName`` live value is used for PVs with specified ``readbackPvName``.
+            If not specified, then the default is False and the readback PV is used for comparison.
+
+        Returns
+        -------
+        list[dict]
+            List of comparison results for each PV in the snapshot. Each PV is represented as a
+            dictionary with the following keys: ``pvName``, ``equal``, ``compare``, ``storedValue``,
+            ``liveValue``.
         """
         method, url, params = self._prepare_compare(
             nodeId=nodeId, tolerance=tolerance, compareMode=compareMode, skipReadback=skipReadback
