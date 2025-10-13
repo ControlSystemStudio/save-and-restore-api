@@ -442,35 +442,3 @@ class _SaveRestoreAPI_Base:
         method, url = "GET", "/path"
         params = {"path": path}
         return method, url, params
-
-    # =============================================================================================
-
-    # def create_config(self, parent_node_uid, name, pv_list):
-    #     config_dict = {
-    #         "configurationNode": {
-    #             "name": name,
-    #             "nodeType": "CONFIGURATION",
-    #             "userName": self._username,
-    #         },
-    #         "configurationData": {
-    #             "pvList": pv_list,
-    #         },
-    #     }
-    #     print(f"config_dict=\n{pprint.pformat(config_dict)}")
-    #     return self.send_request("PUT", f"/config?parentNodeId={parent_node_uid}", body_json=config_dict)
-
-    # def update_config(self, node_uid, name, pv_list):
-    #     config_dict = {
-    #         "configurationNode": {
-    #             "name": name,
-    #             "nodeType": "CONFIGURATION",
-    #             "userName": self._username,
-    #             "uniqueId": node_uid,
-    #         },
-    #         "configurationData": {
-    #             "pvList": pv_list,
-    #         },
-    #     }
-    #     print(f"config_dict=\n{pprint.pformat(config_dict)}")
-    #     # return self.send_request("POST", f"/config/{node_uid}", body_json=config_dict)
-    #     return self.send_request("POST", "/config", body_json=config_dict)
