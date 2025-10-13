@@ -104,7 +104,7 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
             Timeout for this request in seconds. If not specified or None, the default timeout set in the
             class constructor is used.
         auth : httpx.BasicAuth, optional
-            Object with authentication data (generated using ``auth_gen`` method). If not specified or None,
+            Object with authentication data (generated using ``auth_gen()`` method). If not specified or None,
             then the authentication set using ``auth_set`` method is used.
 
         Returns
@@ -287,8 +287,7 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
             Node metadata. The required fields are ``name`` and ``nodeType``.
             Supported node types: ``"FOLDER"``, ``"CONFIGURATION"``.
         auth : httpx.BasicAuth
-            Object with authentication data (generated using ``auth_gen`` method). If not specified or None,
-            then the authentication set using ``auth_set`` method is used.
+            Object with authentication data (generated using ``auth_gen()`` method).
 
         Returns
         -------
@@ -337,8 +336,7 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         nodeId : str
             Unique ID of the node to be deleted.
         auth : httpx.BasicAuth
-            Object with authentication data (generated using ``auth_gen`` method). If not specified or None,
-            then the authentication set using ``auth_set`` method is used.
+            Object with authentication data (generated using ``auth_gen()`` method).
 
         Returns
         -------
@@ -360,8 +358,7 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         uniqueIds : list[str]
             List of UIDs of the nodes to delete.
         auth : httpx.BasicAuth
-            Object with authentication data (generated using ``auth_gen`` method). If not specified or None,
-            then the authentication set using ``auth_set`` method is used.
+            Object with authentication data (generated using ``auth_gen()`` method).
 
         Returns
         -------
@@ -493,8 +490,7 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
             Configuration data (``configurationData``). ``uniqueId`` field must be identical to the
             ``uniqueId`` field in ``configurationNode``.
         auth : httpx.BasicAuth
-            Object with authentication data (generated using ``auth_gen`` method). If not specified or None,
-            then the authentication set using ``auth_set`` method is used.
+            Object with authentication data (generated using ``auth_gen()`` method).
 
         Returns
         -------
@@ -542,8 +538,7 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         tag : dict
             Tag to be added. The dictionary must contain the ``name`` key and optionally ``comment`` key.
         auth : httpx.BasicAuth, optional
-            Object with authentication data (generated using ``auth_gen`` method). If not specified or None,
-            then the authentication set using ``auth_set`` method is used.
+            Object with authentication data (generated using ``auth_gen()`` method).
 
         Returns
         -------
@@ -568,6 +563,8 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         tag : dict
             Tag to be deleted. The dictionary must contain the ``name`` key. The ``comment`` key
             is optional and ignored by the API.
+        auth : httpx.BasicAuth, optional
+            Object with authentication data (generated using ``auth_gen()`` method).
 
         Returns
         -------
@@ -622,8 +619,7 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
             Description of the new snapshot node. If not specified or None, the comment
             is set to date and time of the snapshot, e.g. ``2025-10-12 22:49:50.577``.
         auth : httpx.BasicAuth, optional
-            Object with authentication data (generated using ``auth_gen`` method). If not specified or None,
-            then the authentication set using ``auth_set`` method is used.
+            Object with authentication data (generated using ``auth_gen()`` method).
 
         Returns
         -------
@@ -676,8 +672,7 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         snapshotData : dict
             Snapshot data (``snapshotData``). The required field is ``"snapshotItems"``.
         auth : httpx.BasicAuth, optional
-            Object with authentication data (generated using ``auth_gen`` method). If not specified or None,
-            then the authentication set using ``auth_set`` method is used.
+            Object with authentication data (generated using ``auth_gen()`` method).
 
         Returns
         -------
@@ -707,8 +702,7 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
             Snapshot data (``snapshotData``). ``uniqueId`` field must be identical to the
             ``uniqueId`` field in ``snapshotNode``.
         auth : httpx.BasicAuth, optional
-            Object with authentication data (generated using ``auth_gen`` method). If not specified or None,
-            then the authentication set using ``auth_set`` method is used.
+            Object with authentication data (generated using ``auth_gen()`` method).
 
         Returns
         -------
@@ -822,8 +816,7 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
             ``"referencedSnapshotNodes"``, which points to the list of UIDs of the nodes included in
             the composite snapshot.
         auth : httpx.BasicAuth, optional
-            Object with authentication data (generated using ``auth_gen`` method). If not specified or None,
-            then the authentication set using ``auth_set`` method is used.
+            Object with authentication data (generated using ``auth_gen()`` method).
 
         Returns
         -------
@@ -855,8 +848,7 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
             Composite snapshot data (``compositeSnapshotData``). ``uniqueId`` field must be identical to the
             ``uniqueId`` field in ``compositeSnapshotNode``.
         auth : httpx.BasicAuth, optional
-            Object with authentication data (generated using ``auth_gen`` method). If not specified or None,
-            then the authentication set using ``auth_set`` method is used.
+            Object with authentication data (generated using ``auth_gen()`` method).
 
         Returns
         -------
@@ -888,8 +880,7 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         uniqueNodeIds : list of str
             List of UIDs of snapshots and composite snapshots included in the composite snapshot.
         auth : httpx.BasicAuth, optional
-            Object with authentication data (generated using ``auth_gen`` method). If not specified or None,
-            then the authentication set using ``auth_set`` method is used.
+            Object with authentication data (generated using ``auth_gen()`` method).
 
         Returns
         -------
@@ -918,7 +909,7 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         nodeId : str
             Unique ID of the snapshot node.
         auth : httpx.BasicAuth, optional
-            Object with authentication data (generated using ``auth_gen`` method).
+            Object with authentication data (generated using ``auth_gen()`` method).
 
         Returns
         -------
@@ -944,7 +935,7 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
             List of snapshot items (PVs) to be restored. The format is consistent with
             the format of ``snapshotData["snapshotItems"]``.
         auth : httpx.BasicAuth, optional
-            Object with authentication data (generated using ``auth_gen`` method).
+            Object with authentication data (generated using ``auth_gen()`` method).
 
         Returns
         -------
@@ -1000,6 +991,18 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         Add a filter to the list stored in the database.
 
         API: PUT /filter
+
+        Parameters
+        ----------
+        filter : dict
+            Filter to be added. The dictionary must contain the ``name`` and ``filter`` keys.
+        auth : httpx.BasicAuth, optional
+            Object with authentication data (generated using ``auth_gen()`` method).
+
+        Returns
+        -------
+        dict
+            Added filter as returned by the server.
         """
         method, url, body_json = self._prepare_filter_add(filter=filter)
         return self.send_request(method, url, body_json=body_json, auth=auth)
@@ -1009,6 +1012,11 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         Get the list of all the filters from the database.
 
         API: GET /filters
+
+        Returns
+        -------
+        list[dict]
+            List of all filters in the database.
         """
         method, url = self._prepare_filters_get()
         return self.send_request(method, url)
@@ -1018,6 +1026,17 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         Delete filter with the given name from the database.
 
         API: DELETE /filter/{name}
+
+        Parameters
+        ----------
+        name : str
+            Name of the filter to be deleted.
+        auth : httpx.BasicAuth, optional
+            Object with authentication data (generated using ``auth_gen()`` method).
+
+        Returns
+        -------
+        None
         """
         method, url = self._prepare_filter_delete(name=name)
         return self.send_request(method, url, auth=auth)
@@ -1032,6 +1051,20 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         by ``newParentNodeId``. The API requires 'admin' priviledges.
 
         API: POST /move
+
+        Parameters
+        ----------
+        nodeIds : list[str]
+            List of node unique IDs to be moved.
+        newParentNodeId : str
+            Unique ID of the new parent node.
+        auth : httpx.BasicAuth, optional
+            Object with authentication data (generated using ``auth_gen()`` method).
+
+        Returns
+        -------
+        dict
+            Dictionary with metadata for the new parent node.
         """
         method, url, body_json, params = self._prepare_structure_move(
             nodeIds=nodeIds, newParentNodeId=newParentNodeId
@@ -1040,10 +1073,24 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
     def structure_copy(self, nodeIds, *, newParentNodeId, auth=None):
         """
-        Copy nodes specified by a list of UIDs ``nodeIds`` to a new parent node specified
+        Copy nodes specified by a list of UIDs ``nodeIds`` to the new parent node specified
         by ``newParentNodeId``. The API requires 'admin' priviledges.
 
         API: POST /copy
+
+        Parameters
+        ----------
+        nodeIds : list[str]
+            List of node unique IDs to be moved.
+        newParentNodeId : str
+            Unique ID of the new parent node.
+        auth : httpx.BasicAuth, optional
+            Object with authentication data (generated using ``auth_gen()`` method).
+
+        Returns
+        -------
+        dict
+            Dictionary with metadata for the new parent node.
         """
         method, url, body_json, params = self._prepare_structure_copy(
             nodeIds=nodeIds, newParentNodeId=newParentNodeId
@@ -1052,9 +1099,20 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
     def structure_path_get(self, uniqueNodeId):
         """
-        Get path for the node with specified uniqueNodeId.
+        Get path for the node with specified uniqueNodeId. The path contains a sequence
+        of nodes starting from the root node. Node names are separated by '/' character.
 
         API: GET /path/{uniqueNodeId}
+
+        Parameters
+        ----------
+        uniqueNodeId : str
+            Unique ID of the node.
+
+        Returns
+        -------
+        str
+            Path of the node with names of nodes separated by '/' character.
         """
         method, url = self._prepare_structure_path_get(uniqueNodeId=uniqueNodeId)
         return self.send_request(method, url)
@@ -1063,9 +1121,20 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         """
         Get a list of nodes that match the specified path. The path can point to multiple
         nodes as long as node type is different (e.g. a folder and a configuration may have
-        the same name).
+        the same name and may be simultaneously present in the list).
 
         API: GET /path
+
+        Parameters
+        ----------
+        path : str
+            Path of the node with names of nodes separated by '/' character.
+
+        Returns
+        -------
+        list[dict]
+            List of nodes that match the specified path. Each node is represented as a dictionary
+            with node metadata as returned by the server.
         """
         method, url, params = self._prepare_structure_path_nodes(path=path)
         return self.send_request(method, url, params=params)

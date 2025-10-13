@@ -118,8 +118,9 @@ def clear_sar():
             # Delete all filters
             filters = SR.filters_get()
             for f in filters:
-                if f.startswith("filter_prefix"):
-                    SR.filter_delete(f["name"])
+                f_name = f["name"]
+                if f_name.startswith(filter_prefix):
+                    SR.filter_delete(f_name)
 
     _clear()
     yield
