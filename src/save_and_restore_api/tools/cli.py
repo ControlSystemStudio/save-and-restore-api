@@ -500,7 +500,7 @@ def process_login_command(settings):
             response = SR.login(username=settings.user_name, password=settings.user_password)
             logger.debug(f"Response received: {response}")
 
-            print(f"Login successful. Response: \n{pprint.pformat(response)}")
+            print("Login successful.")
         except Exception as ex:
             raise RuntimeError(f"Login failed: {ex}") from ex
 
