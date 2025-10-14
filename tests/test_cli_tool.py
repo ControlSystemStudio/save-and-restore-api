@@ -163,11 +163,16 @@ def test_cli_tool_config_add_01(
 # fmt: off
 @pytest.mark.parametrize("show_data", [False, True])
 @pytest.mark.parametrize("verbose", [False, True])
-@pytest.mark.parametrize("host_base_url, username, password, cfg_name, exit_code", [
-    (f"{_BASE_URL}", user_username, user_password, "some folder/Test Config 1", EXIT_CODE_SUCCESS),
-    (f"{_BASE_URL}", user_username, user_password + "a", "some folder/Test Config 1", EXIT_CODE_OPERATION_FAILED),
-    (f"{_BASE_URL}", user_username, user_password, "Test Config 1", EXIT_CODE_OPERATION_FAILED),
-    (f"{_BASE_URL}", user_username, user_password, "", EXIT_CODE_OPERATION_FAILED),
+@pytest.mark.parametrize("host_base_url, username, password, cfg_name, add_or_update, exit_code", [
+    (f"{_BASE_URL}", user_username, user_password, "some folder/Test Config 1", False, EXIT_CODE_SUCCESS),
+    (f"{_BASE_URL}", user_username, user_password, "some folder/Test Config 1", True, EXIT_CODE_SUCCESS),
+    (f"{_BASE_URL}", user_username, user_password + "a", "some folder/Test Config 1",
+     False, EXIT_CODE_OPERATION_FAILED),
+    (f"{_BASE_URL}", user_username, user_password + "a", "some folder/Test Config 1",
+     True, EXIT_CODE_OPERATION_FAILED),
+    (f"{_BASE_URL}", user_username, user_password, "Test Config 1", False, EXIT_CODE_OPERATION_FAILED),
+    (f"{_BASE_URL}", user_username, user_password, "", False, EXIT_CODE_OPERATION_FAILED),
+    (f"{_BASE_URL}", user_username, user_password, "", True, EXIT_CODE_OPERATION_FAILED),
 ])
 # fmt: on
 def test_cli_tool_config_update_01(
@@ -177,12 +182,13 @@ def test_cli_tool_config_update_01(
     username,
     password,
     cfg_name,
+    add_or_update,
     exit_code,
     verbose,
     show_data,
 ):
     """
-    Test for CONFIG ADD command.
+    Test for CONFIG UPDATE and CONFIG ADD-OR-UPDATE commands.
     """
     create_root_folder()
 
@@ -198,7 +204,7 @@ def test_cli_tool_config_update_01(
         "save-and-restore",
         "--create-folders=ON",
         "CONFIG",
-        "ADD",
+        "ADD" if not add_or_update else "ADD-OR-UPDATE",
         "--file-format=autosave",
         f"--config-name={config_name_true}",
         f"--file-name={os.path.join(os.path.split(__file__)[0], 'data', 'auto_settings_17.sav')}",
@@ -211,7 +217,7 @@ def test_cli_tool_config_update_01(
     if verbose:
         params = params + ["--verbose"]
 
-    params = ["save-and-restore"] + params + ["CONFIG", "UPDATE"]
+    params = ["save-and-restore"] + params + ["CONFIG", "UPDATE" if not add_or_update else "ADD-OR-UPDATE"]
     if show_data:
         params = params + ["--show-data=ON"]
     params = params + ["--file-format=autosave"]
