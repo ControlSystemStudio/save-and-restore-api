@@ -477,6 +477,16 @@ def set_username_password(settings):
     print("")
 
 
+def check_connection(SR):
+    logger.debug("Connecting to the Save-and-Restore service ...")
+    try:
+        info = SR.info_get()
+    except (SR.HTTPClientError, SR.HTTPRequestError) as ex:
+        logger.debug("Failed to connect to Save-and-Restore service.")
+        raise RuntimeError(f"Failed to connect to the Save-and-Restore service: {ex}") from ex
+    logger.debug(f"Save-and-Restore info:\n{pprint.pformat(info)}")
+
+
 def process_login_command(settings):
     """
     Process the LOGIN command, which checks of user name and password are valid.
@@ -496,6 +506,8 @@ def process_login_command(settings):
 
     with SaveRestoreAPI(base_url=settings.base_url, timeout=settings.timeout) as SR:
         try:
+            check_connection(SR=SR)
+
             logger.debug("Sending 'login' request ...")
             response = SR.login(username=settings.user_name, password=settings.user_password)
             logger.debug(f"Response received: {response}")
@@ -664,6 +676,8 @@ def process_config_command(settings):
         if settings.operation != "GET":
             logger.debug("Configuring authentication parameters ...")
             SR.auth_set(username=settings.user_name, password=settings.user_password)
+
+        check_connection(SR=SR)
 
         logger.debug(f"Checking if config node {settings.config_name!r} exists ...")
         node_uid = check_node_exists(SR, settings.config_name, node_type="CONFIGURATION")
