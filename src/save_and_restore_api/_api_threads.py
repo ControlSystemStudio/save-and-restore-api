@@ -151,6 +151,11 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         Returns information about the Save and Restore service.
 
         API: GET /
+
+        Returns
+        -------
+        dict
+            Dictionary that contains service information.
         """
         method, url = self._prepare_info_get()
         return self.send_request(method, url)
@@ -160,6 +165,12 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         Returns information on the name and current version of the service.
 
         API: GET /verson
+
+        Returns
+        -------
+        str
+            String that contains service name (``service-save-and-restore``) and the service version
+            number.
         """
         method, url = self._prepare_version_get()
         return self.send_request(method, url)
@@ -178,6 +189,18 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
         ``nodes`` - a list of matching nodes (not including data).
 
         API: GET /search
+
+        Parameters
+        ----------
+        allRequestParams : dict
+            Dictionary with search parameters, e.g. ``{"name": "test config"}`` or
+            ``{"description": "backup pvs"}``.
+
+        Returns
+        -------
+        dict
+            Dictionary with the following keys: ``hitCount`` - the number of matching nodes,
+            ``nodes`` - a list of matching nodes (not including data).
         """
         method, url, params = self._prepare_search(allRequestParams=allRequestParams)
         return self.send_request(method, url, params=params)
@@ -188,9 +211,16 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
 
     def help(self, what, *, lang=None):
         """
-        Download help pages, e.g. /help/SearchHelp
+        Download help pages, e.g. ``/help/SearchHelp``
 
         API: GET /help/{what}?lang={lang}
+
+        Parameters
+        ----------
+        what : str
+            Name of the help page, e.g. ``/help/SearchHelp``.
+        lang : str, optional
+            Language code.
         """
         method, url, params = self._prepare_help(what=what, lang=lang)
         return self.send_request(method, url, params=params)
@@ -199,11 +229,23 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
     #                         AUTHENTICATION-CONTROLLER API METHODS
     # =============================================================================================
 
-    def login(self, *, username=None, password=None):
+    def login(self, *, username, password):
         """
-        Validate user credentials and return user information.
+        Validate user credentials and return user information. Raises ``HTTPClientError``
+        if the login fails.
 
         API: POST /login
+
+        Parameters
+        ----------
+        username : str
+            User name.
+        password : str
+            User password.
+
+        Returns
+        -------
+        None
         """
         method, url, body_json = self._prepare_login(username=username, password=password)
         return self.send_request(method, url, body_json=body_json)

@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 set -x
 
 python create_env_file.py
