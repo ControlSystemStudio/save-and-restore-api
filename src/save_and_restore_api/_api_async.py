@@ -83,7 +83,7 @@ class SaveRestoreAPI(_SaveRestoreAPI_Base):
     #                         AUTHENTICATION-CONTROLLER API METHODS
     # =============================================================================================
 
-    async def login(self, *, username=None, password=None):
+    async def login(self, *, username, password):
         # Reusing docstrings from the threaded version
         method, url, body_json = self._prepare_login(username=username, password=password)
         return await self.send_request(method, url, body_json=body_json)

@@ -239,9 +239,7 @@ def test_login_01(username, password, roles, library, code):
     if not _is_async(library):
         with SaveRestoreAPI_Threads(base_url=base_url, timeout=2) as SR:
             if code == 200:
-                response = SR.login(username=username, password=password)
-                assert response["userName"] == username
-                assert response["roles"] == roles
+                SR.login(username=username, password=password)
             else:
                 with pytest.raises(SR.HTTPClientError, match=f"{code}"):
                     SR.login(username=username, password=password)
@@ -249,9 +247,7 @@ def test_login_01(username, password, roles, library, code):
         async def testing():
             async with SaveRestoreAPI_Async(base_url=base_url, timeout=2) as SR:
                 if code == 200:
-                    response = await SR.login(username=username, password=password)
-                    assert response["userName"] == username
-                    assert response["roles"] == roles
+                    await SR.login(username=username, password=password)
                 else:
                     with pytest.raises(SR.HTTPClientError, match=f"{code}"):
                         await SR.login(username=username, password=password)

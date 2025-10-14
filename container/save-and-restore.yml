@@ -1,6 +1,7 @@
 services:
   saveandrestore:
-    image: ghcr.io/controlsystemstudio/phoebus/service-save-and-restore:v5.0.2
+    image: ghcr.io/controlsystemstudio/phoebus/service-save-and-restore:master
+    # image: ghcr.io/controlsystemstudio/phoebus/service-save-and-restore:v5.0.2
     network_mode: "host"
     # ports:
     #   - "8080:8080"
