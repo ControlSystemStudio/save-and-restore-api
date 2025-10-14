@@ -87,12 +87,21 @@ save-and-restore --base-url=http://localhost:8080/save-restore --user-name=user 
 --file-name=eiger_pvs.sav --file-format=autosave
 ```
 
-Update an existing configuration node named 'eiger_config'. Load the list of PVs
+Update the existing configuration node named 'eiger_config'. Load the list of PVs
 from the file ``eiger_pvs.sav``:
 
 ```bash
 save-and-restore --base-url http://localhost:8080/save-restore --user-name=user \
 CONFIG UPDATE --config-name /detectors/imaging/eiger_config \
+--file-name eiger_pvs.sav --file-format autosave
+```
+
+Add new or update the existing configuration node named 'eiger_config'. Load the list of PVs
+from the file ``eiger_pvs.sav``:
+
+```bash
+save-and-restore --base-url http://localhost:8080/save-restore --user-name=user \
+CONFIG ADD-OR-UPDATE --config-name /detectors/imaging/eiger_config \
 --file-name eiger_pvs.sav --file-format autosave
 ```
 

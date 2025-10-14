@@ -131,11 +131,18 @@ def parse_args(settings):
         "    --create-folders=ON CONFIG ADD --config-name=/detectors/imaging/eiger_config \\\n"
         "    --file-name=eiger_pvs.sav --file-format=autosave\n"
         "\n"
-        "  Update an existing configuration node named 'eiger_config'. Load the list of PVs\n"
+        "  Update the existing configuration node named 'eiger_config'. Load the list of PVs\n"
         "  from the file ``eiger_pvs.sav``:\n"
         "\n"
         "  save-and-restore --base-url http://localhost:8080/save-restore --user-name=user \\\n"
         "    CONFIG UPDATE --config-name /detectors/imaging/eiger_config \\\n"
+        "    --file-name eiger_pvs.sav --file-format autosave\n"
+        "\n"
+        "  Add new or update the existing configuration node named 'eiger_config'. Load the list of PVs\n"
+        "  from the file ``eiger_pvs.sav``:\n"
+        "\n"
+        "  save-and-restore --base-url http://localhost:8080/save-restore --user-name=user \\\n"
+        "    CONFIG ADD-OR-UPDATE --config-name /detectors/imaging/eiger_config \\\n"
         "    --file-name eiger_pvs.sav --file-format autosave\n",
         formatter_class=formatter,
     )
@@ -301,6 +308,46 @@ def parse_args(settings):
         "Default: '%(default)s'.",
     )
 
+    parser_config_add_or_update = subparser_config_operation.add_parser(
+        "ADD-OR-UPDATE", help="Add a new or update the existing configuration node."
+    )
+
+    parser_config_add_or_update.add_argument(
+        "--config-name",
+        dest="config_name",
+        type=str,
+        default=None,
+        help="Configuration name including folders, e.g. /detectors/imaging/eiger_config",
+    )
+
+    parser_config_add_or_update.add_argument(
+        "--file-name",
+        "-f",
+        dest="file_name",
+        type=str,
+        default=None,
+        help="Name of the file used as a source of PV names.",
+    )
+
+    parser_config_add_or_update.add_argument(
+        "--file-format",
+        dest="file_format",
+        type=str,
+        choices=["autosave"],
+        default="autosave",
+        help="Format of the file specified by '--file-name'. Default: '%(default)s'",
+    )
+
+    parser_config_add_or_update.add_argument(
+        "--show-data",
+        dest="show_data",
+        type=str,
+        choices=["ON", "OFF"],
+        default="OFF",
+        help="Print the loaded config data. The config node information is always printed. "
+        "Default: '%(default)s'.",
+    )
+
     class ExitOnError(Exception):
         pass
 
@@ -333,23 +380,7 @@ def parse_args(settings):
                     parser_config_get.print_help()
                     raise ExitOnError()
 
-            elif args.operation == "ADD":
-                settings.operation = args.operation
-                settings.config_name = args.config_name
-                settings.file_name = args.file_name
-                settings.file_format = args.file_format
-                settings.show_data = args.show_data == "ON"
-                success = True
-                if not settings.config_name:
-                    logger.error("Required '--config-name' parameter is not specified")
-                    success = False
-                if not settings.file_name:
-                    logger.error("Required '--file-name' ('-f') parameter is not specified")
-                    success = False
-                if not success:
-                    parser_config_add.print_help()
-                    raise ExitOnError()
-            elif args.operation == "UPDATE":
+            elif args.operation in ("ADD", "UPDATE", "ADD-OR-UPDATE"):
                 settings.operation = args.operation
                 settings.config_name = args.config_name
                 settings.file_name = args.file_name
@@ -653,7 +684,7 @@ def process_config_command(settings):
                 if settings.show_data:
                     print(f"Config data:\n{pprint.pformat(config_data)}")
 
-        elif settings.operation == "ADD":
+        elif settings.operation == "ADD" or (settings.operation == "ADD-OR-UPDATE" and not node_uid):
             logger.debug("Executing 'CONFIG ADD' operation ...")
             if node_uid:
                 raise RuntimeError(f"Config node {settings.config_name!r} already exists.")
@@ -686,8 +717,8 @@ def process_config_command(settings):
                     if settings.show_data:
                         print(f"Config data:\n{pprint.pformat(response['configurationData'])}")
 
-        elif settings.operation == "UPDATE":
-            logger.debug("Executing 'CONFIG UPDATE' operation ...")
+        elif settings.operation == "UPDATE" or (settings.operation == "ADD-OR-UPDATE" and node_uid):
+            logger.debug(f"Executing 'CONFIG {settings.operation}' operation ...")
             if not node_uid:
                 raise RuntimeError(f"Config node {settings.config_name!r} does not exist.")
 
