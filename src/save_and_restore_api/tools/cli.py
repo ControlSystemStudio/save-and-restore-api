@@ -481,7 +481,7 @@ def check_connection(SR):
     logger.debug("Connecting to the Save-and-Restore service ...")
     try:
         info = SR.info_get()
-    except SR.HTTPClientError as ex:
+    except (SR.HTTPClientError, SR.HTTPRequestError) as ex:
         logger.debug("Failed to connect to Save-and-Restore service.")
         raise RuntimeError(f"Failed to connect to the Save-and-Restore service: {ex}") from ex
     logger.debug(f"Save-and-Restore info:\n{pprint.pformat(info)}")
