@@ -26,6 +26,18 @@ jobs:
           export SOURCE_DATE_EPOCH=$(git log -1 --pretty=%ct) &&
           pipx run build
 
+      - name: Check for packaging errors
+        run: pipx run twine check --strict dist/*
+
+      - name: Install produced wheel
+        uses: ./.github/actions/install_requirements
+        with:
+          pip-install: dist/*.whl
+
+      - name: Test module is importable using the installed wheel
+        # If more than one module in src/ replace with module name to test
+        run: python -c "import $(ls --hide='*.egg-info' src | head -1)"
+
 
       #- name: Publish to PyPI using trusted publishing
       #  uses: pypa/gh-action-pypi-publish@release/v1
