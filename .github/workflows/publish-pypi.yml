@@ -1,10 +1,12 @@
 name: Publish to PyPI
 
-on:
-  release:
-    types: [created]
-    branches:
-      - main
+on: [push, pull_request]
+
+#on:
+#  release:
+#    types: [created]
+#    branches:
+#      - main
 
 jobs:
   upload:
@@ -12,13 +14,20 @@ jobs:
     environment: release
 
     steps:
-      - name: Download dist artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: dist
-          path: dist
 
-      - name: Publish to PyPI using trusted publishing
-        uses: pypa/gh-action-pypi-publish@release/v1
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
-          attestations: false
+          # Need this to get version number from last tag
+          fetch-depth: 0
+
+      - name: Build sdist and wheel
+        run: >
+          export SOURCE_DATE_EPOCH=$(git log -1 --pretty=%ct) &&
+          pipx run build
+
+
+      #- name: Publish to PyPI using trusted publishing
+      #  uses: pypa/gh-action-pypi-publish@release/v1
+      #  with:
+      #    attestations: false
