@@ -40,5 +40,7 @@ jobs:
 
       - name: Publish to PyPI using trusted publishing
         uses: pypa/gh-action-pypi-publish@release/v1
+        permissions:
+            id-token: write
         with:
           attestations: false
