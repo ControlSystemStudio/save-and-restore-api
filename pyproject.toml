@@ -32,7 +32,7 @@ dependencies = [
 save-and-restore = "save_and_restore_api.tools.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/dmgav/save-and-restore-api"
+Homepage = "https://github.com/ControlSystemStudio/save-and-restore-api"
 
 [project.optional-dependencies]
 dev = [
