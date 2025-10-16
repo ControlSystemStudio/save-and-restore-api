@@ -1,4 +1,4 @@
-name: Publish to PyPI
+name: Publish to PyPI - Test Wheels
 
 on: [push, pull_request]
 
