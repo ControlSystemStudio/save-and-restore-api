@@ -1,0 +1,8 @@
+httpx
+sphinx>=7.0
+myst_parser>=0.13
+sphinx_copybutton
+sphinx_autodoc_typehints
+sphinx_rtd_theme
+numpydoc
+ipython
