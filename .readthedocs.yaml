@@ -11,4 +11,6 @@ build:
     - pip install -e .[dev]
     - pip install -e .[docs]
     - python -m pip list
-    - cp -r docs/html/* $READTHEDOCS_OUTPUT/html/
+    - make -C docs/ html
+    - mkdir -p $READTHEDOCS_OUTPUT/html
+    - cp -r docs/build/html/* $READTHEDOCS_OUTPUT/html
