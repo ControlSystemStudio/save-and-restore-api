@@ -11,7 +11,4 @@ build:
     - pip install -e .[dev]
     - pip install -e .[docs]
     - python -m pip list
-    - make -C docs/ html
-
-sphinx:
-  configuration: docs/source/conf.py
+    - cp -r docs/html/* $READTHEDOCS_OUTPUT/html/
